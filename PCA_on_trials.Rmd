@@ -30,7 +30,7 @@ this one is, but can be handy once we get around to larger datasets.
 ```{r}
 bdnf_file_path <- file.path(here::here(),"data","bdnf_full_counts.csv")
 
-bdnf_counts <-  read_excel(bdnf_file_path)
+bdnf_counts <-  read_csv(bdnf_file_path)
 
 bdnf_counts <- bdnf_counts %>% filter(ensgene !=  "ENSG00000251562")
 ```

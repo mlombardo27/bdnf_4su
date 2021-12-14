@@ -1,0 +1,7 @@
+﻿sample,cond,labelling_time
+BDNF_1h,contrast,1
+BDNF_2h,contrast,2
+BDNF_6h,contrast,6
+CONTROL_1h,base,1
+CONTROL_2h,base,2
+CONTROL_6h,base,6
