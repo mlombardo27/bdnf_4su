@@ -218,3 +218,7 @@ bdnf_counts %>%
     facet_wrap(~symbol)
 ```
 
+MAKE a barplot of the top 100 genes contributions and use that to choose cutoff
+TAKE THE TOP  GENES ON THE 4SU  PC and do GO analysis
+TAKE THE TOP GENES ON THE BDNF PC and do GO analysis
+
