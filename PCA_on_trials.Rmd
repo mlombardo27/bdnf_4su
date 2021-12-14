@@ -1,0 +1,219 @@
+---
+title: "PCA on the 4SU Trial Data"
+author: "Anna-Leigh Brown"
+date: "18/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+if (!require("pacman")){
+    install.packages("pacman")
+} #if pacman is not installed, install it
+pacman::p_load(tidyverse, data.table, ggplot2,janitor,ggpubr,ggrepel,
+               devtools,readxl) #pacman will now install and load these packages if you don't have them
+
+if (!require("annotables")) {
+    devtools::install_github("stephenturner/annotables")
+}
+```
+
+The chunk above is code. But this is just a normal text document. 
+
+Let's load in the file:
+
+I'm using a function called fread from the data.table package to read in the data. 
+I do this cause it reads data faster, it's not relevant for a smaller table like
+this one is, but can be handy once we get around to larger datasets. 
+
+```{r}
+
+bdnf_counts <-  read_excel("C:/Users/mlomb/OneDrive/Desktop/MRes project/bdnf_full_counts (1).xlsx")
+
+bdnf_counts <- bdnf_counts %>% filter(ensgene !=  "ENSG00000251562")
+```
+
+
+As before we're going to put the "ensgene" into a 'rowname' and then 
+do the PCA analysis.
+
+Now I'm going to write this using the pipe operator "%>%". 
+
+Your "hot key" to type that in is: Ctrl + Shift + M 
+
+This command:
+
+```{r}
+pca_piped <- bdnf_counts %>% 
+    column_to_rownames('ensgene') %>% 
+    t() %>% 
+    prcomp(.,scale = TRUE)
+```
+
+is exactly equivalent to this:
+
+```{r}
+bdnf_counts <-  column_to_rownames(bdnf_counts, 'ensgene')
+pca <- prcomp(t(bdnf_counts), scale=TRUE) 
+```
+
+
+I will prove it to you. Double equal sign means 'does this equal this'. For example
+
+```{r}
+y <- 42
+y == 42
+x <- 6
+y == x * 7
+```
+
+So is the rotation for both PCA objects the same? 
+
+```{r}
+pca$rotation == pca_piped$rotation
+```
+
+
+Moving back. We're going to use this tool instead because it has more whistles.
+PCAtools
+https://bioconductor.org/packages/release/bioc/html/PCAtools.html
+
+You would install it from a source called Bioconductor - which is a collection
+of R packages for biological analysis. Uncomment if you want to run
+
+This is the vignette for the package
+https://bioconductor.org/packages/release/bioc/vignettes/PCAtools/inst/doc/PCAtools.html
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("PCAtools")
+```
+
+So let's do a PCA plot using meta data. You'll find formatted meta data in the drive
+
+```{r}
+path_to_meta_you_downloaded <-  "C:/Users/mlomb/Downloads/trial_meta - trial_meta.csv.csv" #update this
+meta_df <- fread(path_to_meta_you_downloaded)
+meta_df <- meta_df %>% 
+    column_to_rownames('sample') 
+
+```
+
+
+```{r}
+library(PCAtools)
+p <- PCAtools::pca(bdnf_counts, metadata = meta_df, removeVar = 0.1)
+```
+What does the removeVar argument do? Why did I include it? 
+
+As before the screeplot
+```{r}
+screeplot(p, axisLabSize = 18, titleLabSize = 22)
+```
+
+Now we're going to make what is called an "eigencorplot"
+
+This is going to correlate our metadata variables with our principle components. 
+Star means "significant". What kind of correlation is it? Check out the help documentation 
+by entering `?PCAtools::eigencorplot` in the console
+```{r}
+PCAtools::eigencorplot(p,components = getComponents(p, seq_len(4)),
+                       metavars = c('labelling_time',"cond"))
+```
+
+Ohh my, PC1 (our most important variable) really is the labelling time. 
+
+We can do a biplot with the 2 PC's that are correlating - e.g. labelling and 
+PC5 which is the effect of BDNF
+
+```{r}
+biplot(p,
+       x = "PC1",
+       y = "PC2",
+       colby = 'cond')
+```
+
+BDNF's effect seems to be really tightly on the first 2 hours of BDNF + 4SU. 
+
+Let's go ahead and find out what the genes are that are correlated with PC1 - eg
+what's happening at 6 hours labelling time? 
+
+Let's directly take the loadings of each of the genes (a PCA is a linear combination). 
+
+I'm going to also show you now how to put the symbol back on the table. 
+We shall use the wonder of the `left_join` 
+
+```{r}
+pc1_gene_loadings = p$loadings %>% 
+    dplyr::select(PC1) %>% 
+    rownames_to_column('ensgene') %>% 
+    left_join(annotables::grch38 %>% dplyr::select(ensgene,symbol)) %>% 
+#https://statisticsglobe.com/r-dplyr-join-inner-left-right-full-semi-anti
+    arrange(-PC1)
+```
+
+Now we've seen a join let's do the same thing with our original count table
+```{r}
+bdnf_counts = bdnf_counts %>% 
+    rownames_to_column('ensgene') %>% 
+    left_join(annotables::grch38 %>% dplyr::select(ensgene,symbol))
+```
+
+
+I want to look at the expression of the top 15 genes on PC1 so I'm going 
+to plot their expression. 
+
+Practice removing the pipes and see what every line does
+```{r}
+bdnf_counts %>% 
+    left_join(pc1_gene_loadings %>% head(15))  %>% 
+    filter(!is.na(PC1)) %>% 
+    select(-ensgene) %>% 
+    melt(id.vars = c("symbol","PC1")) %>% 
+    mutate(symbol = fct_reorder(symbol,-PC1)) %>% 
+    separate(variable, into = c("condition","labelling_time")) %>% 
+    ggplot(aes(x = labelling_time, y = value, fill = condition)) + 
+    geom_col(position = "dodge2") + 
+    facet_wrap(~symbol)
+
+```
+
+4su labelling is overwhelming the pc1 so i do analysis without those 2 timepoints, removing BDNF_6h, CONTROL_6h
+
+```{r}
+bdnf_counts <- select(bdnf_counts, -c(BDNF_6h, CONTROL_6h))
+
+meta_df <- meta_df %>% filter(labelling_time != 6)
+
+bdnf_counts <- select(bdnf_counts, -(symbol)) %>% 
+    unique() %>% 
+    remove_rownames() %>% 
+    column_to_rownames("ensgene")
+```
+
+what genes account for PC3 w/o BDNF6h, Control6h
+
+```{r}
+pc3_gene_loadings = p$loadings %>% 
+    dplyr::select(PC3) %>% 
+    rownames_to_column('ensgene') %>% 
+    left_join(annotables::grch38 %>% dplyr::select(ensgene,symbol)) %>% 
+#https://statisticsglobe.com/r-dplyr-join-inner-left-right-full-semi-anti
+    arrange(-PC3)
+
+bdnf_counts %>% 
+    rownames_to_column("ensgene") %>% 
+    left_join(pc3_gene_loadings %>% head(15))  %>% 
+    filter(!is.na(PC3)) %>% 
+    select(-ensgene) %>% 
+    melt(id.vars = c("symbol","PC3")) %>% 
+    mutate(symbol = fct_reorder(symbol,-PC3)) %>% 
+    separate(variable, into = c("condition","BDNF")) %>%
+    ggplot(aes(x = BDNF, y = value, fill = condition)) +
+    geom_col(position = "dodge2") + 
+    facet_wrap(~symbol)
+```
+
