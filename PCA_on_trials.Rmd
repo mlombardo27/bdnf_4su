@@ -32,7 +32,7 @@ bdnf_file_path <- file.path(here::here(),"data","bdnf_full_counts.csv")
 
 bdnf_counts <-  read_csv(bdnf_file_path)
 
-bdnf_counts <- bdnf_counts %>% filter(ensgene !=  "ENSG00000251562")
+##bdnf_counts <- bdnf_counts %>% filter(ensgene !=  "ENSG00000251562")
 ```
 
 
@@ -52,59 +52,29 @@ pca_piped <- bdnf_counts %>%
     prcomp(.,scale = TRUE)
 ```
 
-is exactly equivalent to this:
-
-```{r}
-bdnf_counts <-  column_to_rownames(bdnf_counts, 'ensgene')
-pca <- prcomp(t(bdnf_counts), scale=TRUE) 
-```
-
-
-I will prove it to you. Double equal sign means 'does this equal this'. For example
-
-```{r}
-y <- 42
-y == 42
-x <- 6
-y == x * 7
-```
-
-So is the rotation for both PCA objects the same? 
-
-```{r}
-pca$rotation == pca_piped$rotation
-```
-
-
-Moving back. We're going to use this tool instead because it has more whistles.
-PCAtools
-https://bioconductor.org/packages/release/bioc/html/PCAtools.html
-
-You would install it from a source called Bioconductor - which is a collection
-of R packages for biological analysis. Uncomment if you want to run
-
-This is the vignette for the package
-https://bioconductor.org/packages/release/bioc/vignettes/PCAtools/inst/doc/PCAtools.html
-
-```{r}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("PCAtools")
-```
 
 So let's do a PCA plot using meta data. You'll find formatted meta data in the drive
 
 ```{r}
-path_to_meta_you_downloaded <-  file.path(here::here(),"data","trial_meta.csv") #update this
+path_to_meta_you_downloaded <-  file.path(here::here(),"data","trial_meta.csv")
 meta_df <- fread(path_to_meta_you_downloaded)
 meta_df <- meta_df %>% 
     column_to_rownames('sample') 
 
 ```
 
+Let's read in the counts table and make a named version
+```{r}
+bdnf_counts_named <- bdnf_counts %>% 
+    left_join(annotables::grch38 %>% dplyr::select(ensgene,symbol))
+
+bdnf_counts <- bdnf_counts %>% 
+    column_to_rownames('ensgene')
+```
+
 
 ```{r}
+
 library(PCAtools)
 p <- PCAtools::pca(bdnf_counts, metadata = meta_df, removeVar = 0.1)
 ```
@@ -121,7 +91,7 @@ This is going to correlate our metadata variables with our principle components.
 Star means "significant". What kind of correlation is it? Check out the help documentation 
 by entering `?PCAtools::eigencorplot` in the console
 ```{r}
-PCAtools::eigencorplot(p,components = getComponents(p, seq_len(4)),
+PCAtools::eigencorplot(p,components = getComponents(p, seq_len(6)),
                        metavars = c('labelling_time',"cond"))
 ```
 
@@ -133,7 +103,7 @@ PC5 which is the effect of BDNF
 ```{r}
 biplot(p,
        x = "PC1",
-       y = "PC2",
+       y = "PC5",
        colby = 'cond')
 ```
 
@@ -156,12 +126,6 @@ pc1_gene_loadings = p$loadings %>%
     arrange(-PC1)
 ```
 
-Now we've seen a join let's do the same thing with our original count table
-```{r}
-bdnf_counts = bdnf_counts %>% 
-    rownames_to_column('ensgene') %>% 
-    left_join(annotables::grch38 %>% dplyr::select(ensgene,symbol))
-```
 
 
 I want to look at the expression of the top 15 genes on PC1 so I'm going 
@@ -170,6 +134,7 @@ to plot their expression.
 Practice removing the pipes and see what every line does
 ```{r}
 bdnf_counts %>% 
+    rownames_to_column('ensgene') %>% 
     left_join(pc1_gene_loadings %>% head(15))  %>% 
     filter(!is.na(PC1)) %>% 
     select(-ensgene) %>% 
@@ -182,6 +147,15 @@ bdnf_counts %>%
 
 ```
 
+
+
+MAKE a barplot of the top 100 genes contributions and use that to choose cutoff
+TAKE THE TOP  GENES ON THE 4SU  PC1 and do GO analysis
+```{r}
+
+```
+
+TAKE THE TOP GENES ON THE BDNF PC5 and do GO analysis
 4su labelling is overwhelming the pc1 so i do analysis without those 2 timepoints, removing BDNF_6h, CONTROL_6h
 
 ```{r}
@@ -218,7 +192,5 @@ bdnf_counts %>%
     facet_wrap(~symbol)
 ```
 
-MAKE a barplot of the top 100 genes contributions and use that to choose cutoff
-TAKE THE TOP  GENES ON THE 4SU  PC and do GO analysis
-TAKE THE TOP GENES ON THE BDNF PC and do GO analysis
+
 
