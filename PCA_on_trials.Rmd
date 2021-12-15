@@ -135,7 +135,7 @@ Practice removing the pipes and see what every line does
 ```{r}
 bdnf_counts %>% 
     rownames_to_column('ensgene') %>% 
-    left_join(pc1_gene_loadings %>% head(15))  %>% 
+    left_join(pc1_gene_loadings %>% head(15)) %>% 
     filter(!is.na(PC1)) %>% 
     select(-ensgene) %>% 
     melt(id.vars = c("symbol","PC1")) %>% 
@@ -150,12 +150,48 @@ bdnf_counts %>%
 
 
 MAKE a barplot of the top 100 genes contributions and use that to choose cutoff
-TAKE THE TOP  GENES ON THE 4SU  PC1 and do GO analysis
+
 ```{r}
+top_100 <- pc1_gene_loadings %>% 
+    slice_max(PC1, n = 100)
+
+top_100 %>% 
+     mutate(symbol = fct_reorder(symbol, PC1)) %>% 
+     ggplot(aes(x = symbol, y = PC1)) + 
+     geom_col(position = "dodge2") +
+     coord_flip()
+```
+
+Given the above graph, I will take the top 30
+TAKE THE TOP  GENES ON THE 4SU  PC1 and do GO analysis
+
+```{r}
+library(clusterProfiler)
+library(org.Hs.eg.db)
+
+go_4su <- pc1_gene_loadings %>% 
+    slice_max(PC1, n=30)
+
+ego <- enrichGO(gene = go_4su$ensgene,
+                OrgDb = org.Hs.eg.db,
+                ont = "ALL",
+                keyType = "ENSEMBL",
+                pAdjustMethod = "BH",
+                pvalueCutoff = 0.01,
+                qvalueCutoff = 0.05,
+                readable = TRUE)
+
+(go_dot <- dotplot(ego, showCategory = 30) +
+    ggtitle("dotplot for PC1"))
 
 ```
 
 TAKE THE TOP GENES ON THE BDNF PC5 and do GO analysis
+
+```{r}
+go_bdnf <- pc5
+```
+
 4su labelling is overwhelming the pc1 so i do analysis without those 2 timepoints, removing BDNF_6h, CONTROL_6h
 
 ```{r}
