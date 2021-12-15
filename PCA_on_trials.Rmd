@@ -222,8 +222,21 @@ pc5_gene_loadings = p$loadings %>%
 #https://statisticsglobe.com/r-dplyr-join-inner-left-right-full-semi-anti
     arrange(-PC5)
 
+top_100_pc5 <- pc5_gene_loadings %>% 
+    slice_max(PC5, n = 100)
+
+top_100_pc5 %>% 
+     mutate(symbol = fct_reorder(symbol, PC5)) %>% 
+     ggplot(aes(x = symbol, y = PC5)) + 
+     geom_col(position = "dodge2") +
+     coord_flip()
+```
+
+now do GO analysis
+
+```{r}
 go_bdnf <- pc5_gene_loadings %>% 
-    slice_max(PC5, n=30)
+    slice_max(PC5, n=50)
 
 ego_bp_bdnf <- enrichGO(gene = go_bdnf$ensgene,
                 OrgDb = org.Hs.eg.db,
@@ -239,7 +252,7 @@ ego_cc_bdnf <- enrichGO(gene = go_bdnf$ensgene,
                 ont = "CC",
                 keyType = "ENSEMBL",
                 pAdjustMethod = "BH",
-                pvalueCutoff = 0.01,
+                pvalueCutoff = 0.05,
                 qvalueCutoff = 0.05,
                 readable = TRUE)
 
@@ -248,7 +261,7 @@ ego_mf_bdnf <- enrichGO(gene = go_bdnf$ensgene,
                 ont = "MF",
                 keyType = "ENSEMBL",
                 pAdjustMethod = "BH",
-                pvalueCutoff = 0.01,
+                pvalueCutoff = 0.05,
                 qvalueCutoff = 0.05,
                 readable = TRUE)
 
