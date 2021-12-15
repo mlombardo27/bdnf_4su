@@ -172,24 +172,96 @@ library(org.Hs.eg.db)
 go_4su <- pc1_gene_loadings %>% 
     slice_max(PC1, n=30)
 
-ego <- enrichGO(gene = go_4su$ensgene,
+ego_bp_4su <- enrichGO(gene = go_4su$ensgene,
                 OrgDb = org.Hs.eg.db,
-                ont = "ALL",
+                ont = "BP",
                 keyType = "ENSEMBL",
                 pAdjustMethod = "BH",
                 pvalueCutoff = 0.01,
                 qvalueCutoff = 0.05,
                 readable = TRUE)
 
-(go_dot <- dotplot(ego, showCategory = 30) +
-    ggtitle("dotplot for PC1"))
+ego_cc_4su <- enrichGO(gene = go_4su$ensgene,
+                OrgDb = org.Hs.eg.db,
+                ont = "CC",
+                keyType = "ENSEMBL",
+                pAdjustMethod = "BH",
+                pvalueCutoff = 0.01,
+                qvalueCutoff = 0.05,
+                readable = TRUE)
+
+ego_mf_4su <- enrichGO(gene = go_4su$ensgene,
+                OrgDb = org.Hs.eg.db,
+                ont = "MF",
+                keyType = "ENSEMBL",
+                pAdjustMethod = "BH",
+                pvalueCutoff = 0.01,
+                qvalueCutoff = 0.05,
+                readable = TRUE)
+
+go_dot_bp_4su <- dotplot(ego_bp_4su, showCategory = 30) +
+    ggtitle("dotplot for PC1 BP")
+
+go_dot_cc_4su <- dotplot(ego_cc_4su, showCategory = 30) +
+    ggtitle("dotplot for PC1 CC")
+
+go_dot_mf_4su <- dotplot(ego_mf_4su, showCategory = 30) +
+    ggtitle("dotplot for PC1 MF")
+
+(cowplot::plot_grid(go_dot_bp_4su, go_dot_cc_4su, go_dot_mf_4su, ncol = 3))
 
 ```
 
 TAKE THE TOP GENES ON THE BDNF PC5 and do GO analysis
 
 ```{r}
-go_bdnf <- pc5
+pc5_gene_loadings = p$loadings %>% 
+    dplyr::select(PC5) %>% 
+    rownames_to_column('ensgene') %>% 
+    left_join(annotables::grch38 %>% dplyr::select(ensgene,symbol)) %>% 
+#https://statisticsglobe.com/r-dplyr-join-inner-left-right-full-semi-anti
+    arrange(-PC5)
+
+go_bdnf <- pc5_gene_loadings %>% 
+    slice_max(PC5, n=30)
+
+ego_bp_bdnf <- enrichGO(gene = go_bdnf$ensgene,
+                OrgDb = org.Hs.eg.db,
+                ont = "BP",
+                keyType = "ENSEMBL",
+                pAdjustMethod = "BH",
+                pvalueCutoff = 0.05,
+                qvalueCutoff = 0.05,
+                readable = TRUE)
+
+ego_cc_bdnf <- enrichGO(gene = go_bdnf$ensgene,
+                OrgDb = org.Hs.eg.db,
+                ont = "CC",
+                keyType = "ENSEMBL",
+                pAdjustMethod = "BH",
+                pvalueCutoff = 0.01,
+                qvalueCutoff = 0.05,
+                readable = TRUE)
+
+ego_mf_bdnf <- enrichGO(gene = go_bdnf$ensgene,
+                OrgDb = org.Hs.eg.db,
+                ont = "MF",
+                keyType = "ENSEMBL",
+                pAdjustMethod = "BH",
+                pvalueCutoff = 0.01,
+                qvalueCutoff = 0.05,
+                readable = TRUE)
+
+go_dot_bp_bdnf <- dotplot(ego_bp_bdnf, showCategory = 30) +
+    ggtitle("dotplot for PC5 BP")
+
+go_dot_cc_bdnf <- dotplot(ego_cc_bdnf, showCategory = 30) +
+    ggtitle("dotplot for PC5 CC")
+
+go_dot_mf_bdnf <- dotplot(ego_mf_bdnf, showCategory = 30) +
+    ggtitle("dotplot for PC5 MF")
+
+(cowplot::plot_grid(go_dot_bp_bdnf, go_dot_cc_bdnf, go_dot_mf_bdnf, ncol = 3))
 ```
 
 4su labelling is overwhelming the pc1 so i do analysis without those 2 timepoints, removing BDNF_6h, CONTROL_6h
