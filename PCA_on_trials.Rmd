@@ -1,6 +1,6 @@
 ---
 title: "PCA on the 4SU Trial Data"
-author: "Anna-Leigh Brown"
+author: "Anna-Leigh Brown and Maddie Lombardo"
 date: "18/11/2021"
 output: html_document
 ---
@@ -276,6 +276,40 @@ go_dot_mf_bdnf <- dotplot(ego_mf_bdnf, showCategory = 30) +
 
 (cowplot::plot_grid(go_dot_bp_bdnf, go_dot_cc_bdnf, go_dot_mf_bdnf, ncol = 3))
 ```
+
+cnet plot for 4su
+
+```{r}
+(go_cnet_bp_4su <- cnetplot(ego_bp_4su))
+```
+
+
+cnet plot for bdnf
+
+```{r}
+(go_cnet_bp_bdnf <- cnetplot(ego_bp_bdnf))
+```
+
+adding GO categories to PC1 and PC5 gene loadings
+```{r}
+pc1_go_cat <- pc1_gene_loadings$symbol %>% 
+    get_anno_categories(.) %>% 
+    left_join(pc1_gene_loadings, by = c("gene" = "symbol"))
+
+pc5_go_cat <- pc5_gene_loadings$symbol %>% 
+    get_anno_categories(.) %>% 
+    left_join(pc5_gene_loadings, by = c("gene" = "symbol"))
+```
+
+making csv documents for PC1_go_cat and PC5_go_cat
+
+```{r}
+write_csv(pc1_go_cat, file.path(here::here(),"data","pc1_go_cat.csv"))
+
+write_csv(pc5_go_cat, file.path(here::here(), "data", "pc5_go_cat.csv"))
+
+```
+
 
 4su labelling is overwhelming the pc1 so i do analysis without those 2 timepoints, removing BDNF_6h, CONTROL_6h
 
