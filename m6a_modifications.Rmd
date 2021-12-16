@@ -53,3 +53,28 @@ the_thing %>%
   theme(legend.position = 'none')
 ```
 
+which axonal genes have the most m6a sites?
+
+```{r}
+#first read in the axonal genes file
+axonal_genes_filepath <- file.path(here::here("data", "axonal_genes.txt"))
+axonal_genes <- readLines(axonal_genes_filepath)
+
+axonal_genes_df <- as.data.frame(axonal_genes) %>% 
+  left_join(m6a_sites, by = c("axonal_genes" = "symbol")) %>% 
+  mutate(n = ifelse(is.na(n), 0, n))
+
+m6a_axonal_genes <- axonal_genes_df %>% 
+  select(axonal_genes, n) %>% 
+  unique() %>% 
+  slice_max(n, n = 25)
+
+axonal_thing <- m6a_axonal_genes %>% 
+  mutate(axonal_genes = fct_reorder(axonal_genes, n)) %>% 
+   ggplot(aes(x = axonal_genes, y = n,fill = axonal_genes))+
+   geom_col() + 
+  scale_fill_manual(values = rep(christmas, 15)) + 
+  theme(legend.position = 'none')+
+  coord_flip()
+```
+
