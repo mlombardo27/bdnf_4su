@@ -78,3 +78,21 @@ axonal_thing <- m6a_axonal_genes %>%
   coord_flip()
 ```
 
+percent m6a in axonal genes : 77%
+
+```{r}
+num_axonal_genes_m6a <- axonal_genes_df %>% 
+  filter(n >0) %>% 
+  pull(axonal_genes) %>% 
+  unique() %>% 
+  length()
+
+percent_m6a_axonal <- (num_axonal_genes_m6a/length(axonal_genes)*100)
+```
+
+percent of total transcriptome that is axonal
+
+```{r}
+percent_axonal_of_total <- length(axonal_genes)/(length(unique(annotables::grch38$ensgene)))*100
+```
+
