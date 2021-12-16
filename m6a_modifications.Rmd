@@ -43,9 +43,13 @@ the_thing <- validation_genes_df %>%
   select(validation_genes, n) %>% 
   unique()
 
+christmas = c("#a81817", "#344d2f")
+
 the_thing %>% 
    mutate(validation_genes = fct_reorder(validation_genes, -n)) %>% 
-   ggplot(aes(x = validation_genes, y = n, fill = red))+
-  geom_col()
+   ggplot(aes(x = validation_genes, y = n,fill = validation_genes))+
+   geom_col() + 
+  scale_fill_manual(values = rep(christmas,5)) + 
+  theme(legend.position = 'none')
 ```
 
