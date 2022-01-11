@@ -1,0 +1,60 @@
+---
+title: "Differential_expression_full_BDNF"
+author: "Maddie Lombardo"
+date: "1/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(annotables)
+library(tidyverse)
+```
+
+read in the files
+```{r}
+featureCounts_file_path <- file.path(here::here(),"data","feature_counts_bdnf_full_experiment")
+
+res <- run_standard_deseq(featureCounts_file_path,
+                   base_grep = "CONTROL",
+                   contrast_grep = "BDNF",
+                   grep_pattern = "1hr",
+                   baseName = "control",
+                   contrastName = 'bdnf')
+
+
+meta_file_path <- file.path(here::here(),"data", "full_experiment_metadata.csv")
+
+metadata <- fread(meta_file_path)
+
+```
+read in functions
+```{r}
+source(here::here('make_volcano_plot.R'))
+```
+
+first, do a PCA plot of all samples
+```{r}
+featureCounts_file_path <- file.path(here::here(),"data","feature_counts_bdnf_full_experiment")
+counts_object <- create_feature_count_table(featureCounts_file_path)
+
+counts_object %>% 
+    select(-gene_name) %>% 
+    column_to_rownames('Geneid') %>% 
+    t()
+
+meta_df <- metadata %>% 
+    column_to_rownames('sample_name') 
+
+
+library(PCAtools)
+p <- PCAtools::pca(counts_object , metadata = metadata, removeVar = 0.1)
+```
+
+
+make volcano plot
+
+```{r}
+make_volcano_plot(res)
+```
+
