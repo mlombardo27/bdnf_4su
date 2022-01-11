@@ -38,17 +38,27 @@ first, do a PCA plot of all samples
 featureCounts_file_path <- file.path(here::here(),"data","feature_counts_bdnf_full_experiment")
 counts_object <- create_feature_count_table(featureCounts_file_path)
 
-counts_object %>% 
+#remove the gene name column, turn it into a rowname
+counts_object <- counts_object %>% 
     select(-gene_name) %>% 
-    column_to_rownames('Geneid') %>% 
-    t()
+    column_to_rownames('Geneid') 
 
 meta_df <- metadata %>% 
-    column_to_rownames('sample_name') 
+  mutate(well = as.factor(well)) %>% #turn it into a factor so when you color by it with the biplot function it doesn't give you a gradient
+    column_to_rownames('sample_name')
 
+#reorder the columns of counts object to match the order of the rows in meta_df
+counts_object <- counts_object[match(rownames(meta_df),colnames(counts_object))]
 
 library(PCAtools)
-p <- PCAtools::pca(counts_object , metadata = metadata, removeVar = 0.1)
+p <- PCAtools::pca(counts_object , metadata = meta_df, removeVar = 0.1)
+
+screeplot <- screeplot(p, axisLabSize = 18, titleLabSize = 22)
+
+biplot(p,
+       x = "PC1",
+       y = "PC2",
+       colby = 'cond')
 ```
 
 
