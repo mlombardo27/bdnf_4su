@@ -31,6 +31,9 @@ metadata <- fread(meta_file_path)
 read in functions
 ```{r}
 source(here::here('make_volcano_plot.R'))
+source(here::here('run_standard_deseq.R'))
+source(here::here('make_deseq_dfs.R'))
+source(here::here('create_feature_count_table.R'))
 ```
 
 first, do a PCA plot of all samples
@@ -61,6 +64,71 @@ biplot(p,
        colby = 'cond')
 ```
 
+now I'm going to get and arrange the different pca gene loadings
+
+```{r}
+pc1_gene_loadings = p$loadings %>% 
+    dplyr::select(PC1) %>% 
+    rownames_to_column('ensgene') %>% 
+    left_join(annotables::grch38 %>% dplyr::select(ensgene,symbol)) %>% 
+    arrange(-PC1)
+
+pc2_gene_loadings = p$loadings %>% 
+  dplyr::select(PC2) %>% 
+  rownames_to_column('ensgene') %>% 
+  left_join(annotables::grch38 %>% 
+dplyr::select(ensgene,symbol)) %>% 
+  arrange(-PC2)
+```
+
+looking at expression of top 15 genes
+```{r}
+pc1_counts <- counts_object %>% 
+    rownames_to_column('ensgene') 
+    left_join(pc1_gene_loadings %>% head(15)) %>% 
+    filter(!is.na(PC1)) %>% 
+    select(-ensgene) %>% 
+    melt(id.vars = c("symbol","PC1")) %>% 
+    mutate(symbol = fct_reorder(symbol,-PC1)) %>% 
+    separate(variable, into = c("condition","labelling_time")) %>% 
+    ggplot(aes(x = labelling_time, y = value, fill = condition)) + 
+    geom_col(position = "dodge2") + 
+    facet_wrap(~symbol)
+
+pc2_counts <- counts_object %>% 
+    rownames_to_column('ensgene') %>% 
+    left_join(pc2_gene_loadings %>% head(15)) %>% 
+    filter(!is.na(PC2)) %>% 
+    select(-ensgene) %>% 
+    melt(id.vars = c("symbol","PC2")) %>% 
+    mutate(symbol = fct_reorder(symbol,-PC2)) %>% 
+    separate(variable, into = c("condition","PC2")) %>% 
+    ggplot(aes(x = PC2, y = value, fill = condition)) + 
+    geom_col(position = "dodge2") + 
+    facet_wrap(~symbol)
+```
+
+pulling out top 100 to determine cutoff
+
+```{r}
+top_100_PC1 <- pc1_gene_loadings %>% 
+    slice_max(PC1, n = 100)
+
+top_100_PC1 %>% 
+     mutate(symbol = fct_reorder(symbol, PC1)) %>% 
+     ggplot(aes(x = symbol, y = PC1)) + 
+     geom_col(position = "dodge2") +
+     coord_flip()
+
+top_100_PC2 <- pc2_gene_loadings %>% 
+    slice_max(PC2, n = 100)
+
+top_100_PC2 %>% 
+     mutate(symbol = fct_reorder(symbol, PC2)) %>% 
+     ggplot(aes(x = symbol, y = PC2)) + 
+     geom_col(position = "dodge2") +
+     coord_flip()
+```
 
 make volcano plot
 
