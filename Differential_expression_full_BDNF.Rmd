@@ -97,14 +97,20 @@ pc1_counts <- counts_object %>%
     left_join(pc1_gene_loadings, by = 'ensgene') %>%
     filter(!is.na(PC1)) %>% 
     select(-ensgene) %>% 
+    slice_max(PC1, n = 15) %>%
     melt(id.vars = c("symbol","PC1")) %>% 
-    slice_max(PC1, n = 15) %>% 
     mutate(symbol = fct_reorder(symbol,-PC1)) %>% 
     separate(variable, into = c("condition","plate","labelling_time")) %>% 
     ggplot(aes(x = labelling_time, y = value, fill = condition)) + 
     geom_col(position = "dodge2") + 
     facet_wrap(~symbol)
 ```
+
+making an eigencor plot
+```{r}
+eigencorplot(p, metavars = c('time',"cond", 'well'))
+```
+
 
 pulling out top 100 to determine cutoff
 
