@@ -108,8 +108,39 @@ pc1_counts <- counts_object %>%
 
 making an eigencor plot
 ```{r}
-eigencorplot(p, metavars = c('time',"cond", 'well'))
+eigencorplot(p, metavars = c('time',"cond", 'well', 'perc_assigned_hisat3n', 'm_assigned_assigned_hisat3n'))
 ```
+
+when we looked at the PCA plot and the eigencor plot, we noticed that plate 4 had a massive effect. We are removing plate 4 due to the poor RNA quality
+```{r}
+keep_me <- meta_df %>% 
+  filter(well != 4) %>% 
+  rownames()
+
+counts_object <- counts_object %>% 
+  select(any_of(keep_me))
+
+meta_df <- meta_df %>% 
+  filter(well != 4)
+
+counts_object <- counts_object[match(rownames(meta_df), colnames(counts_object))]
+```
+
+let's do a pca and eigencor of the data without well 4 now
+
+```{r}
+p_no4 <- PCAtools::pca(counts_object , metadata = meta_df, removeVar = 0.1)
+
+screeplot <- screeplot(p_no4, axisLabSize = 18, titleLabSize = 22)
+
+eigencorplot(p_no4, metavars = c('time',"cond", 'well', 'perc_assigned_hisat3n', 'm_assigned_assigned_hisat3n'))
+
+biplot(p_no4,
+       x = "PC1",
+       y = "PC2",
+       colby = 'cond')
+```
+
 
 
 pulling out top 100 to determine cutoff
