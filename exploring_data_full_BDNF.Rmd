@@ -138,9 +138,14 @@ I am going to normalize this data, then run a few more data exploratory function
 ```{r normalize}
 normalized_counts_obj <- edgeR::cpm(counts_object)
 
-normalized_p <- PCAtools::pca(normalized_counts_obj, removeVar = 0.1)
+normalized_p <- PCAtools::pca(normalized_counts_obj, metadata = meta_df, removeVar = 0.1)
 
-eigencorplot(normalized_p, metavars = c('time',"cond", 'well', 'perc_assigned_hisat3n', 'm_assigned_assigned_hisat3n')) 
+eigencorplot(normalized_p, metavars = c('time',"cond", 'well', 'perc_assigned_hisat3n', 'm_assigned_assigned_hisat3n'))
+
+biplot(normalized_p,
+       x = "PC1",
+       y = "PC2",
+       colby = 'cond')
 ```
 
 
