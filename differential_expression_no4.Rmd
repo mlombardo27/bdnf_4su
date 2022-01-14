@@ -1,0 +1,66 @@
+---
+title: "Differential expression no well 4"
+author: "Maddie Lombardo"
+date: "1/14/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(annotables)
+library(PCAtools)
+```
+
+reading the functions in that i'll use
+```{r reading the functions in}
+source(here::here('run_standard_deseq.R'))
+source(here::here('make_volcano_plot.R'))
+```
+
+reading in the files
+```{r read in files}
+feature_counts_file_path <- file.path(here::here("data","feature_counts_bdnf_No4"))
+```
+
+running a deseq 1hr
+```{r deseq2 1h}
+one_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL",
+                              contrast_grep = "BDNF", 
+                              grep_pattern = "1hr",
+                              baseName = "control",
+                              contrastName = 'BDNF')
+```
+
+make a volcano plot 1hr
+```{r volcano plot 1h}
+one_hour_volcano <- make_volcano_plot(one_hour_dds$results_table)
+```
+
+deseq 2hr
+```{r deseq 2h}
+two_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL",
+                              contrast_grep = "BDNF", 
+                              grep_pattern = "2hr",
+                              baseName = "control",
+                              contrastName = 'BDNF')
+```
+
+volcano 2hr
+```{r volcano 2h}
+two_hr_volcano <- make_volcano_plot(two_hour_dds$results_table)
+```
+
+deseq 6h
+```{r deseq 6h}
+six_hr_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL",
+                              contrast_grep = "BDNF", 
+                              grep_pattern = "6hr",
+                              baseName = "control",
+                              contrastName = 'BDNF')
+```
+
+volcano 6h
+```{r volcano 6h}
+six_hr_volcano <- make_volcano_plot(six_hr_dds$results_table)
+```
