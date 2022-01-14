@@ -103,6 +103,10 @@ making an eigencor plot
 eigencorplot(p, metavars = c('time',"cond", 'well', 'perc_assigned_hisat3n', 'm_assigned_assigned_hisat3n'))
 ```
 
+![featureCounts_plot](C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/plots/featureCounts_assignment_plot-1.png)
+
+![rseq_read_distribution](C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/plots/rseqc_read_distribution_plot-1.png)
+
 when we looked at the PCA plot and the eigencor plot, we noticed that plate 4 had a massive effect. We are removing plate 4 due to the poor RNA quality
 ```{r remove 4}
 keep_me <- meta_df %>% 
