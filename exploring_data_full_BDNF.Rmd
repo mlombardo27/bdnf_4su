@@ -23,14 +23,6 @@ read in the files
 ```{r}
 featureCounts_file_path <- file.path(here::here(),"data","feature_counts_bdnf_full_experiment")
 
-res <- run_standard_deseq(featureCounts_file_path,
-                   base_grep = "CONTROL",
-                   contrast_grep = "BDNF",
-                   grep_pattern = "1hr",
-                   baseName = "control",
-                   contrastName = 'bdnf')
-
-
 meta_file_path <- file.path(here::here(),"data", "full_experiment_metadata.csv")
 
 metadata <- fread(meta_file_path)
