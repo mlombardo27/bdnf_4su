@@ -11,6 +11,9 @@ library(tidyverse)
 library(annotables)
 library(PCAtools)
 library(gprofiler2)
+library(pcaExplorer)
+library(AnnotationDbi)
+library(org.Hs.eg.db)
 ```
 
 reading the functions in that i'll use
@@ -108,3 +111,34 @@ down_6hr = subset(results_sig_6hr, log2FoldChange < 0)
 gp_up_6hr = gost(row.names(up_6hr), organism = "hsapiens")
 gp_down_6hr = gost(row.names(down_6hr), organism = "hsapiens")
 ```
+
+trying out different ways to visualize the GO analysis to see what is easiest
+```{r pcaExplorer GO}
+
+resOrdered_1hr <- as.data.frame(results_1hr[order(results_1hr$padj),]) 
+
+de_df_1hr <-resOrdered_1hr[resOrdered_1hr$padj < 0.05 & !is.na(resOrdered_1hr$padj),]
+
+de_symbols_1hr <- de_df_1hr$gene_name
+
+bg_ids_1hr <- rownames(one_hour_dds$deseq_obj)[rowSums(counts(one_hour_dds$deseq_obj))>0]
+
+bg_ids_1hr %>% 
+  
+
+bg_symbols_1hr <- mapIds(org.Hs.eg.db,
+                     keys = bg_ids_1hr,
+                     column = "SYMBOL",
+                     keytype = "ENSEMBL",
+                     multiVals = "first")
+
+topgoDE_1hr <- topGOtable(de_symbols_1hr, bg_symbols,
+                             ontology = "BP",
+                             mapping = "org.Hs.eg.db",
+                             geneID = "symbol")
+```
+
+```{r clusterprofiler GO}
+
+```
+
