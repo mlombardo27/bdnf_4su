@@ -24,7 +24,7 @@ source(here::here('make_volcano_plot.R'))
 
 reading in the files
 ```{r read in files}
-feature_counts_file_path <- feature_counts_file_path <- file.path(here::here("data","feature_counts_bdnf_No4"))
+feature_counts_file_path <- file.path(here::here("data","feature_counts_bdnf_No4"))
 ```
 
 running a deseq 1hr
