@@ -24,7 +24,7 @@ source(here::here('make_volcano_plot.R'))
 
 reading in the files
 ```{r read in files}
-feature_counts_file_path <- file.path(here::here("data","feature_counts_bdnf_No4"))
+feature_counts_file_path <- feature_counts_file_path <- file.path(here::here("data","feature_counts_bdnf_No4"))
 ```
 
 running a deseq 1hr
@@ -74,33 +74,49 @@ hour 1
 ```{r GO 1hr}
 results_1hr <- one_hour_dds$results_table
 
-results_sig_1hr <- subset(results_1hr, padj < 0.05)
+up_1hr_ensembl <- results_1hr %>% 
+  dplyr::filter(padj < 0.05 & log2FoldChange > 0 ) %>% 
+  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
+  arrange(-log2FoldChange) %>% 
+  pull(ensembl)
 
-up_1hr = subset(results_sig_1hr, log2FoldChange > 0)
+down_1hr_ensembl <- results_1hr %>% 
+  dplyr::filter(padj < 0.05 & log2FoldChange < 0 ) %>% 
+  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
+  arrange(log2FoldChange) %>% 
+  pull(ensembl)
 
-down_1hr = subset(results_sig_1hr, log2FoldChange < 0)
+gp_up_1hr = gost(up_1hr_ensembl, organism = "hsapiens", ordered_query = TRUE) 
+gostplot(gp_up_1hr)
+gp_down_1hr = gost(down_1hr_ensembl), organism = "hsapiens", ordered_query = TRUE) 
+gostplot(gp_down_1hr)
 
-gp_up_1hr = gost(row.names(up_1hr), organism = "hsapiens")
-gp_down_1hr = gost(row.names(down_1hr), organism = "hsapiens") 
 ```
 
 GO hr 2
 ```{r go 2h}
 results_2hr <- two_hour_dds$results_table
 
-results_sig_2hr <- subset(results_2hr, padj < 0.05)
+up_2hr_ensembl <- results_2hr %>% 
+  filter(padj < 0.05 & log2FoldChange > 0 ) %>% 
+  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
+  pull(ensembl)
 
-up_2hr = subset(results_sig_2hr, log2FoldChange > 0)
+down_2hr_ensembl <- results_2hr %>% 
+  filter(padj < 0.05 & log2FoldChange < 0 ) %>% 
+  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
+  pull(ensembl)
 
-down_2hr = subset(results_sig_2hr, log2FoldChange < 0)
 
-gp_up_2hr = gost(row.names(up_2hr), organism = "hsapiens")
-gp_down_2hr = gost(row.names(down_2hr), organism = "hsapiens")
+
+gp_up_2hr <-  gost(up_2hr_ensembl, organism = "hsapiens")
+
+gp_down_2hr <-  gost(down_2hr_ensembl, organism = "hsapiens")
 ```
 
 go 6h
 ```{r go 6h}
-results_6hr <- six_hour_dds$results_table
+results_6hr <- six_hr_dds$results_table
 
 results_sig_6hr <- subset(results_6hr, padj < 0.05)
 
@@ -112,6 +128,49 @@ gp_up_6hr = gost(row.names(up_6hr), organism = "hsapiens")
 gp_down_6hr = gost(row.names(down_6hr), organism = "hsapiens")
 ```
 
+
+```{r clusterprofiler GO 1hr}
+
+# bg_ids_1hr <- rownames(one_hour_dds$deseq_obj)[rowSums(counts(two_hour_dds$deseq_obj))>0] %>% gsub("\\..*", "", .) 
+bg_ids_1hr <- one_hour_dds$results_table$Geneid %>% gsub("\\..*", "", .) 
+
+e_go_cc_1hr_up <- enrichGO(gene          = up_1hr_ensembl,
+                universe      = bg_ids_1hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "CC",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+
+e_go_mf_1hr_up <- enrichGO(gene          = up_1hr_ensembl,
+                universe      = bg_ids_1hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "MF",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+
+e_go_bp_1hr_up <- enrichGO(gene          = up_1hr_ensembl,
+                universe      = bg_ids_1hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+head(ego)
+cnetplot(e_go_cc_1hr_up)
+dotplot(e_go_cc_1hr_up)
+barplot(e_go_cc_1hr_up)
+```
+
+
+
 trying out different ways to visualize the GO analysis to see what is easiest
 ```{r pcaExplorer GO}
 
@@ -121,7 +180,8 @@ de_df_1hr <-resOrdered_1hr[resOrdered_1hr$padj < 0.05 & !is.na(resOrdered_1hr$pa
 
 de_symbols_1hr <- de_df_1hr$gene_name
 
-bg_ids_1hr <- rownames(one_hour_dds$deseq_obj)[rowSums(counts(one_hour_dds$deseq_obj))>0]
+bg_ids_1hr <- rownames(one_hour_dds$deseq_obj)[rowSums(counts(one_hour_dds$deseq_obj))>0] %>% gsub("\\..*", "", .) 
+
 
 bg_ids_1hr %>% 
   
@@ -136,9 +196,5 @@ topgoDE_1hr <- topGOtable(de_symbols_1hr, bg_symbols,
                              ontology = "BP",
                              mapping = "org.Hs.eg.db",
                              geneID = "symbol")
-```
-
-```{r clusterprofiler GO}
-
 ```
 

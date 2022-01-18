@@ -24,7 +24,7 @@ make_deseq_dfs = function(total_table, grep_pattern = "", leave_out = "", base_g
     conv_df = conv_df[ , !(names(conv_df) %in% drop_col)]
   }
 
-  if("geneid" %in% names(total_table)){
+    if("geneid" %in% names(total_table)){
     rownames(conv_df) = total_table$geneid
   }else if("Geneid" %in% names(total_table)){
     rownames(conv_df) = total_table$Geneid
