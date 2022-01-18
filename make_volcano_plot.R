@@ -1,12 +1,15 @@
 # Volcano Plot Function
 
-make_volcano_plot <- function(res) {
+make_volcano_plot <- function(res, gene_names = "") {
   res <- res %>% 
     as.data.frame() %>% 
     mutate(graph_alpha = ifelse((padj < 0.1) | (is.na(padj)), 1,0.2)) %>%
     mutate(graph_color = case_when(graph_alpha == 1 & log2FoldChange < 0 ~ "downregulated",
                                    graph_alpha == 1 & log2FoldChange > 0 ~ "upregulated",
                                    TRUE ~ "not significant")) 
+  if(gene_names != ""){
+    res <- res %>% mutate(plot_name = ifelse(gene_name %in% gene_names, gene_name,NA))
+  }
   
   my_plot <- ggplot(res, aes(x = log2FoldChange,
                              y= -log10(padj),
@@ -23,6 +26,9 @@ make_volcano_plot <- function(res) {
     geom_vline(xintercept = c(0), linetype = "dotted") +
     guides(alpha = FALSE, size = FALSE, fill = FALSE)
   
+  if(gene_names != ""){
+    my_plot <- my_plot + geom_text(aes(label = plot_name))
+  }
 
   return(my_plot)
 }
