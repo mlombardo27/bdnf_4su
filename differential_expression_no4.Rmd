@@ -14,6 +14,7 @@ library(gprofiler2)
 library(pcaExplorer)
 library(AnnotationDbi)
 library(org.Hs.eg.db)
+library(clusterProfiler)
 ```
 
 reading the functions in that i'll use
@@ -88,7 +89,7 @@ down_1hr_ensembl <- results_1hr %>%
 
 gp_up_1hr = gost(up_1hr_ensembl, organism = "hsapiens", ordered_query = TRUE) 
 gostplot(gp_up_1hr)
-gp_down_1hr = gost(down_1hr_ensembl), organism = "hsapiens", ordered_query = TRUE) 
+gp_down_1hr = gost(down_1hr_ensembl, organism = "hsapiens", ordered_query = TRUE)
 gostplot(gp_down_1hr)
 
 ```
@@ -118,20 +119,23 @@ go 6h
 ```{r go 6h}
 results_6hr <- six_hr_dds$results_table
 
-results_sig_6hr <- subset(results_6hr, padj < 0.05)
+up_6hr_ensembl <- results_6hr %>% 
+  filter(padj < 0.05 & log2FoldChange > 0 ) %>% 
+  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
+  pull(ensembl)
 
-up_6hr = subset(results_sig_6hr, log2FoldChange > 0)
+down_6hr_ensembl <- results_6hr %>% 
+  filter(padj < 0.05 & log2FoldChange < 0 ) %>% 
+  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
+  pull(ensembl)
 
-down_6hr = subset(results_sig_6hr, log2FoldChange < 0)
-
-gp_up_6hr = gost(row.names(up_6hr), organism = "hsapiens")
-gp_down_6hr = gost(row.names(down_6hr), organism = "hsapiens")
+gp_up_6hr = gost(up_6hr_ensembl, organism = "hsapiens")
+gp_down_6hr = gost(down_6hr_ensembl, organism = "hsapiens")
 ```
 
 
 ```{r clusterprofiler GO 1hr}
 
-# bg_ids_1hr <- rownames(one_hour_dds$deseq_obj)[rowSums(counts(two_hour_dds$deseq_obj))>0] %>% gsub("\\..*", "", .) 
 bg_ids_1hr <- one_hour_dds$results_table$Geneid %>% gsub("\\..*", "", .) 
 
 e_go_cc_1hr_up <- enrichGO(gene          = up_1hr_ensembl,
@@ -163,13 +167,103 @@ e_go_bp_1hr_up <- enrichGO(gene          = up_1hr_ensembl,
                 pvalueCutoff  = 0.01,
                 qvalueCutoff  = 0.05,
         readable      = TRUE)
-head(ego)
-cnetplot(e_go_cc_1hr_up)
-dotplot(e_go_cc_1hr_up)
-barplot(e_go_cc_1hr_up)
+
+if(any(e_go_cc_1hr_up@result$p.adjust <0.01)){
+  cnetplot(e_go_cc_1hr_up)
+  dotplot(e_go_cc_1hr_up)
+  }
+
+if(any(e_go_bp_1hr_up@result$p.adjust <0.01)){
+  cnetplot(e_go_bp_1hr_up)
+  dotplot(e_go_bp_1hr_up)}
+
 ```
 
+```{r clusterProfiler GO at 2hr}
+bg_ids_2hr <- two_hour_dds$results_table$Geneid %>% gsub("\\..*", "", .) 
 
+e_go_cc_2hr_up <- enrichGO(gene          = up_2hr_ensembl,
+                universe      = bg_ids_2hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "CC",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+
+e_go_mf_2hr_up <- enrichGO(gene          = up_2hr_ensembl,
+                universe      = bg_ids_2hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "MF",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+
+e_go_bp_2hr_up <- enrichGO(gene          = up_2hr_ensembl,
+                universe      = bg_ids_2hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+
+if(any(e_go_cc_2hr_up@result$p.adjust <0.01)){
+  cnetplot(e_go_cc_2hr_up)
+  dotplot(e_go_cc_2hr_up)
+  }
+
+if(any(e_go_bp_2hr_up@result$p.adjust <0.01)){
+  cnetplot(e_go_bp_2hr_up)
+  dotplot(e_go_bp_2hr_up)}
+```
+
+```{r clusterProfiler GO at 6hr}
+bg_ids_6hr <- six_hr_dds$results_table$Geneid %>% gsub("\\..*", "", .) 
+
+e_go_cc_6hr_up <- enrichGO(gene          = up_6hr_ensembl,
+                universe      = bg_ids_6hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "CC",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+
+e_go_mf_6hr_up <- enrichGO(gene          = up_6hr_ensembl,
+                universe      = bg_ids_6hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "MF",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+
+e_go_bp_6hr_up <- enrichGO(gene          = up_6hr_ensembl,
+                universe      = bg_ids_6hr,
+                keyType = "ENSEMBL",
+                OrgDb         = org.Hs.eg.db,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+
+if(any(e_go_cc_6hr_up@result$p.adjust <0.01)){
+  cnetplot(e_go_cc_6hr_up)
+  dotplot(e_go_cc_6hr_up)
+  }
+
+if(any(e_go_bp_6hr_up@result$p.adjust <0.01)){
+  cnetplot(e_go_bp_6hr_up)
+  dotplot(e_go_bp_6hr_up)}
+```
 
 trying out different ways to visualize the GO analysis to see what is easiest
 ```{r pcaExplorer GO}
@@ -183,16 +277,9 @@ de_symbols_1hr <- de_df_1hr$gene_name
 bg_ids_1hr <- rownames(one_hour_dds$deseq_obj)[rowSums(counts(one_hour_dds$deseq_obj))>0] %>% gsub("\\..*", "", .) 
 
 
-bg_ids_1hr %>% 
-  
+bg_symbols_1hr <- results_1hr$gene_name
 
-bg_symbols_1hr <- mapIds(org.Hs.eg.db,
-                     keys = bg_ids_1hr,
-                     column = "SYMBOL",
-                     keytype = "ENSEMBL",
-                     multiVals = "first")
-
-topgoDE_1hr <- topGOtable(de_symbols_1hr, bg_symbols,
+topgoDE_1hr <- topGOtable(de_symbols_1hr, bg_symbols_1hr,
                              ontology = "BP",
                              mapping = "org.Hs.eg.db",
                              geneID = "symbol")
