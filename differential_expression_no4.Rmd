@@ -265,23 +265,3 @@ if(any(e_go_bp_6hr_up@result$p.adjust <0.01)){
   dotplot(e_go_bp_6hr_up)}
 ```
 
-trying out different ways to visualize the GO analysis to see what is easiest
-```{r pcaExplorer GO}
-
-resOrdered_1hr <- as.data.frame(results_1hr[order(results_1hr$padj),]) 
-
-de_df_1hr <-resOrdered_1hr[resOrdered_1hr$padj < 0.05 & !is.na(resOrdered_1hr$padj),]
-
-de_symbols_1hr <- de_df_1hr$gene_name
-
-bg_ids_1hr <- rownames(one_hour_dds$deseq_obj)[rowSums(counts(one_hour_dds$deseq_obj))>0] %>% gsub("\\..*", "", .) 
-
-
-bg_symbols_1hr <- results_1hr$gene_name
-
-topgoDE_1hr <- topGOtable(de_symbols_1hr, bg_symbols_1hr,
-                             ontology = "BP",
-                             mapping = "org.Hs.eg.db",
-                             geneID = "symbol")
-```
-
