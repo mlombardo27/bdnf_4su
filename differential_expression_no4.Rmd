@@ -3,12 +3,9 @@ title: "Differential expression no well 4"
 author: "Maddie Lombardo"
 date: "1/14/2022"
 output:
-  html_document: default
-      toc: true
-      toc_float: true
-knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(dirname(inputFile), 'docs/index.html')) })
-  
-  pdf_document: default
+  html_document: 
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -30,7 +27,7 @@ library(clusterProfiler)
 source(here::here('run_standard_deseq.R'))
 source(here::here('make_volcano_plot.R'))
 source(here::here('filter_significant.R'))
-source(here::here('cluster_profiler.R'))
+source(here::here('cluster_profiler_GO_analysis.R'))
 ```
 
 ### reading in the file
@@ -184,70 +181,370 @@ gp_down_6hr = gost(down_6hr_ensembl, organism = "hsapiens")
 gostplot(gp_down_6hr)
 ```
 
-## its GO time!!!!
+# its GO time!!!!
 
-### GO 1 hr
-```{r clusterprofiler GO 1hr, up}
+## GO 1 hr
+
+### GO 1 hr Setup
+```{r clusterprofiler GO 1hr, up and down}
 
 e_go_cc_1hr_up <- cp_GO_analysis(up_1hr_ensembl, one_hour_dds, typeGO = "cc")
 
 e_go_mf_1hr_up <- cp_GO_analysis(up_1hr_ensembl, one_hour_dds, typeGO = "mf")
 
 e_go_bp_1hr_up <- cp_GO_analysis(up_1hr_ensembl, one_hour_dds, typeGO = "bp")
+
+e_go_cc_1hr_down <- cp_GO_analysis(down_1hr_ensembl, one_hour_dds, typeGO = "cc")
+
+e_go_mf_1hr_down <- cp_GO_analysis(down_1hr_ensembl, one_hour_dds, typeGO = "mf")
+
+e_go_bp_1hr_down <- cp_GO_analysis(down_1hr_ensembl, one_hour_dds, typeGO = "bp")
 ```
 
-### Cnet plot CC 1 hour
-```{r cnet plot cc 1hr}
+### Cnet plot CC upregulated 1 hour
+```{r cnet plot cc upregulated 1hr}
 if(any(e_go_cc_1hr_up@result$p.adjust <0.01)){
-  cc_cnet_1hr <- cnetplot(e_go_cc_1hr_up)+
-    ggtitle("C Net Plot CC 1 hr")}
-
-print(cc_cnet_1hr)
+  cc_cnet_1hr_up <- cnetplot(e_go_cc_1hr_up)+
+    ggtitle("C Net Plot CC Upregulated 1 hr")
+    print(cc_cnet_1hr_up)}
 ```
 
-### dotplot CC 1hr
-  dotplot(e_go_cc_1hr_up)
-  }
+### dotplot CC upregulated 1hr
 
+```{r CC dotplot upregulated 1hr}
+if(any(e_go_cc_1hr_up@result$p.adjust <0.01)){
+  cc_dotplot_1hr_up <- dotplot(e_go_cc_1hr_up)+
+    ggtitle("Dotplot CC upregulated 1 hr")
+print(cc_dotplot_1hr_up)}
+```
+
+### cnet plot BP upregulated 1hr
+```{r BP cnet upregulated 1hr}
 if(any(e_go_bp_1hr_up@result$p.adjust <0.01)){
-  cnetplot(e_go_bp_1hr_up)
-  dotplot(e_go_bp_1hr_up)}
-
+  bp_cnetplot_1hr_up <- cnetplot(e_go_bp_1hr_up)+
+    ggtitle("CNet Plot BP Upregulated 1hr")
+print(bp_cnetplot_1hr_up)}
 ```
 
-```{r clusterProfiler GO at 2hr, up}
+### dotplot BP upregulated 1hr
+
+```{r BP dotplot upregulated 1hr}
+if(any(e_go_bp_1hr_up@result$p.adjust <0.01)){
+  bp_dotplot_1hr_up <- dotplot(e_go_bp_1hr_up)+
+    ggtitle("Dot Plot BP Upregulated 1hr")
+print(bp_dotplot_1hr_up)}
+```
+
+### cnet plot MF 1hr Upregulated
+
+```{r mf cnet upregulated 1hr}
+if(any(e_go_mf_1hr_up@result$p.adjust <0.01)){
+  mf_cnetplot_1hr_up <- cnetplot(e_go_mf_1hr_up)+
+    ggtitle("CNet Plot MF Upregulated 1hr")
+print(mf_cnetplot_1hr_up)}
+```
+
+### dotplot MF 1hr Upregulated
+
+```{r mf dotplot upregulated 1hr}
+if(any(e_go_mf_1hr_up@result$p.adjust <0.01)){
+  mf_dotplot_1hr_up <- dotplot(e_go_mf_1hr_up)+
+    ggtitle("Dot Plot MF Upregulated 1hr")
+print(mf_dotplot_1hr_up)}
+```
+
+### Cnet plot CC downregulated 1 hour
+```{r cnet plot cc downregulated 1hr}
+if(any(e_go_cc_1hr_down@result$p.adjust <0.01)){
+  cc_cnet_1hr_down <- cnetplot(e_go_cc_1hr_down)+
+    ggtitle("C Net Plot CC Down Regulated 1 hr")
+  print(cc_cnet_1hr_down)}
+```
+
+### dotplot CC downregulated 1hr
+
+```{r CC dotplot downregulated 1hr}
+if(any(e_go_cc_1hr_down@result$p.adjust <0.01)){
+  cc_dotplot_1hr_down <- dotplot(e_go_cc_1hr_down)+
+    ggtitle("Dotplot CC Down regulated 1 hr")
+  print(cc_dotplot_1hr_down)}
+```
+
+### cnet plot BP down regulated 1hr
+```{r BP cnet down regulated 1hr}
+if(any(e_go_bp_1hr_down@result$p.adjust <0.01)){
+  bp_cnetplot_1hr_down <- cnetplot(e_go_bp_1hr_down)+
+    ggtitle("CNet Plot BP down regulated 1hr")
+  print(bp_cnetplot_1hr_down)}
+```
+
+### dotplot BP down regulated 1hr
+
+```{r BP dotplot down regulated 1hr}
+if(any(e_go_bp_1hr_down@result$p.adjust <0.01)){
+  bp_dotplot_1hr_down <- dotplot(e_go_bp_1hr_down)+
+    ggtitle("Dot Plot BP down regulated 1hr")
+  print(bp_dotplot_1hr_down)}
+```
+
+### cnet plot MF 1hr down regulated
+
+```{r mf cnet down regulated 1hr}
+if(any(e_go_mf_1hr_down@result$p.adjust <0.01)){
+  mf_cnetplot_1hr_down <- cnetplot(e_go_mf_1hr_down)+
+    ggtitle("CNet Plot MF down regulated 1hr")
+  print(mf_cnetplot_1hr_down)}
+```
+
+### dotplot MF 1hr down regulated
+
+```{r mf dotplot down regulated 1hr}
+if(any(e_go_mf_1hr_down@result$p.adjust <0.01)){
+  mf_dotplot_1hr_down <- dotplot(e_go_mf_1hr_down)+
+    ggtitle("Dot Plot MF down regulated 1hr")
+print(mf_dotplot_1hr_down)}
+```
+
+## GO 2 hr
+
+### GO 2 hr setup
+```{r clusterProfiler GO at 2hr, up and down}
 e_go_cc_2hr_up <- cp_GO_analysis(up_2hr_ensembl, two_hour_dds, typeGO = "cc")
 
 e_go_mf_2hr_up <- cp_GO_analysis(up_2hr_ensembl, two_hour_dds, typeGO = "mf")
 
 e_go_bp_2hr_up <- cp_GO_analysis(up_2hr_ensembl, two_hour_dds, typeGO = "bp")
+
+e_go_cc_2hr_down <- cp_GO_analysis(down_2hr_ensembl, two_hour_dds, typeGO = "cc")
+
+e_go_mf_2hr_down <- cp_GO_analysis(down_2hr_ensembl, two_hour_dds, typeGO = "mf")
+
+e_go_bp_2hr_down <- cp_GO_analysis(down_2hr_ensembl, two_hour_dds, typeGO = "bp")
 ```
 
+
+### Cnet plot CC upregulated 2 hour
+```{r cnet plot cc upregulated 2hr}
 if(any(e_go_cc_2hr_up@result$p.adjust <0.01)){
-  cnetplot(e_go_cc_2hr_up)
-  dotplot(e_go_cc_2hr_up)
-  }
+  cc_cnet_2hr_up <- cnetplot(e_go_cc_2hr_up)+
+    ggtitle("C Net Plot CC Upregulated 2 hr")
+  print(cc_cnet_2hr_up)}
+```
 
+### dotplot CC upregulated 2hr
+
+```{r CC dotplot upregulated 2hr}
+if(any(e_go_cc_2hr_up@result$p.adjust <0.01)){
+  cc_dotplot_2hr_up <- dotplot(e_go_cc_2hr_up)+
+    ggtitle("Dotplot CC upregulated 2 hr")
+  print(cc_dotplot_2hr_up)}
+```
+
+### cnet plot BP upregulated 2hr
+```{r BP cnet upregulated 2hr}
 if(any(e_go_bp_2hr_up@result$p.adjust <0.01)){
-  cnetplot(e_go_bp_2hr_up)
-  dotplot(e_go_bp_2hr_up)}
+  bp_cnetplot_2hr_up <- cnetplot(e_go_bp_2hr_up)+
+    ggtitle("CNet Plot BP Upregulated 2hr")
+  print(bp_cnetplot_2hr_up)}
 ```
 
-```{r clusterProfiler GO at 6hr,up}
-e_go_cc_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hour_dds, typeGO = "cc")
+### dotplot BP upregulated 2hr
 
-e_go_mf_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hour_dds, typeGO = "mf")
-
-e_go_bp_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hour_dds, typeGO = "bp")
+```{r BP dotplot upregulated 2hr}
+if(any(e_go_bp_2hr_up@result$p.adjust <0.01)){
+  bp_dotplot_2hr_up <- dotplot(e_go_bp_2hr_up)+
+    ggtitle("Dot Plot BP Upregulated 2hr")
+  print(bp_dotplot_2hr_up)}
 ```
 
+### cnet plot MF 2hr Upregulated
+
+```{r mf cnet upregulated 2hr}
+if(any(e_go_mf_2hr_up@result$p.adjust <0.01)){
+  mf_cnetplot_2hr_up <- cnetplot(e_go_mf_2hr_up)+
+    ggtitle("CNet Plot MF Upregulated 2hr")
+  print(mf_cnetplot_2hr_up)}
+```
+
+### dotplot MF 2hr Upregulated
+
+```{r mf dotplot upregulated 2hr}
+if(any(e_go_mf_2hr_up@result$p.adjust <0.01)){
+  mf_dotplot_2hr_up <- dotplot(e_go_mf_2hr_up)+
+    ggtitle("Dot Plot MF Upregulated 2hr")
+  print(mf_dotplot_2hr_up)}
+```
+
+### Cnet plot CC downregulated 2 hour
+```{r cnet plot cc downregulated 2hr}
+if(any(e_go_cc_2hr_down@result$p.adjust <0.01)){
+  cc_cnet_2hr_down <- cnetplot(e_go_cc_2hr_down)+
+    ggtitle("C Net Plot CC Down Regulated 2 hr")
+  print(cc_cnet_2hr_down)}
+```
+
+### dotplot CC downregulated 2hr
+
+```{r CC dotplot downregulated 2hr}
+if(any(e_go_cc_2hr_down@result$p.adjust <0.01)){
+  cc_dotplot_2hr_down <- dotplot(e_go_cc_2hr_down)+
+    ggtitle("Dotplot CC Down regulated 2 hr")
+  print(cc_dotplot_2hr_down)}
+```
+
+### cnet plot BP down regulated 2hr
+```{r BP cnet down regulated 2hr}
+if(any(e_go_bp_2hr_down@result$p.adjust <0.01)){
+  bp_cnetplot_2hr_down <- cnetplot(e_go_bp_2hr_down)+
+    ggtitle("CNet Plot BP down regulated 2hr")
+  print(bp_cnetplot_2hr_down)}
+```
+
+### dotplot BP down regulated 2hr
+
+```{r BP dotplot down regulated 2hr}
+if(any(e_go_bp_2hr_down@result$p.adjust <0.01)){
+  bp_dotplot_2hr_down <- dotplot(e_go_bp_2hr_down)+
+    ggtitle("Dot Plot BP down regulated 2hr")
+  print(bp_dotplot_2hr_down)}
+```
+
+### cnet plot MF 2hr down regulated
+
+```{r mf cnet down regulated 2hr}
+if(any(e_go_mf_2hr_down@result$p.adjust <0.01)){
+  mf_cnetplot_2hr_down <- cnetplot(e_go_mf_2hr_down)+
+    ggtitle("CNet Plot MF down regulated 2hr")
+  print(mf_cnetplot_2hr_down)}
+```
+
+### dotplot MF 2hr down regulated
+
+```{r mf dotplot down regulated 2hr}
+if(any(e_go_mf_2hr_down@result$p.adjust <0.01)){
+  mf_dotplot_2hr_down <- dotplot(e_go_mf_2hr_down)+
+    ggtitle("Dot Plot MF down regulated 2hr")
+  print(mf_dotplot_2hr_down)}
+```
+
+## GO 6hr
+
+### GO 6hr setup
+```{r clusterProfiler GO at 6hr,up and down}
+e_go_cc_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hr_dds, typeGO = "cc")
+
+e_go_mf_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hr_dds, typeGO = "mf")
+
+e_go_bp_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hr_dds, typeGO = "bp")
+
+e_go_cc_6hr_down <- cp_GO_analysis(down_6hr_ensembl, six_hr_dds, typeGO = "cc")
+
+e_go_mf_6hr_down <- cp_GO_analysis(down_6hr_ensembl, six_hr_dds, typeGO = "mf")
+
+e_go_bp_6hr_down <- cp_GO_analysis(down_6hr_ensembl, six_hr_dds, typeGO = "bp")
+```
+
+### Cnet plot CC upregulated 6 hour
+```{r cnet plot cc upregulated 6hr}
 if(any(e_go_cc_6hr_up@result$p.adjust <0.01)){
-  cnetplot(e_go_cc_6hr_up)
-  dotplot(e_go_cc_6hr_up)
-  }
+  cc_cnet_6hr_up <- cnetplot(e_go_cc_6hr_up)+
+    ggtitle("C Net Plot CC Upregulated 6 hr")
+  print(cc_cnet_6hr_up)}
+```
 
+### dotplot CC upregulated 6hr
+
+```{r CC dotplot upregulated 6hr}
+if(any(e_go_cc_6hr_up@result$p.adjust <0.01)){
+  cc_dotplot_6hr_up <- dotplot(e_go_cc_6hr_up)+
+    ggtitle("Dotplot CC upregulated 6 hr")
+  print(cc_dotplot_6hr_up)}
+```
+
+### cnet plot BP upregulated 6hr
+```{r BP cnet upregulated 6hr}
 if(any(e_go_bp_6hr_up@result$p.adjust <0.01)){
-  cnetplot(e_go_bp_6hr_up)
-  dotplot(e_go_bp_6hr_up)}
+  bp_cnetplot_6hr_up <- cnetplot(e_go_bp_6hr_up)+
+    ggtitle("CNet Plot BP Upregulated 6hr")
+  print(bp_cnetplot_6hr_up)}
+```
+
+### dotplot BP upregulated 6hr
+
+```{r BP dotplot upregulated 6hr}
+if(any(e_go_bp_6hr_up@result$p.adjust <0.01)){
+  bp_dotplot_6hr_up <- dotplot(e_go_bp_6hr_up)+
+    ggtitle("Dot Plot BP Upregulated 6hr")
+  print(bp_dotplot_6hr_up)}
+```
+
+### cnet plot MF 6hr Upregulated
+
+```{r mf cnet upregulated 6hr}
+if(any(e_go_mf_6hr_up@result$p.adjust <0.01)){
+  mf_cnetplot_6hr_up <- cnetplot(e_go_mf_6hr_up)+
+    ggtitle("CNet Plot MF Upregulated 6hr")
+  print(mf_cnetplot_6hr_up)}
+```
+
+### dotplot MF 6hr Upregulated
+
+```{r mf dotplot upregulated 6hr}
+if(any(e_go_mf_6hr_up@result$p.adjust <0.01)){
+  mf_dotplot_6hr_up <- dotplot(e_go_mf_6hr_up)+
+    ggtitle("Dot Plot MF Upregulated 6hr")
+  print(mf_dotplot_6hr_up)}
+```
+
+### Cnet plot CC downregulated 6 hour
+```{r cnet plot cc downregulated 6hr}
+if(any(e_go_cc_6hr_down@result$p.adjust <0.01)){
+  cc_cnet_6hr_down <- cnetplot(e_go_cc_6hr_down)+
+    ggtitle("C Net Plot CC Down Regulated 6 hr")
+  print(cc_cnet_6hr_down)}
+```
+
+### dotplot CC downregulated 6hr
+
+```{r CC dotplot downregulated 6hr}
+if(any(e_go_cc_6hr_down@result$p.adjust <0.01)){
+  cc_dotplot_6hr_down <- dotplot(e_go_cc_6hr_down)+
+    ggtitle("Dotplot CC Down regulated 6 hr")
+  print(cc_dotplot_6hr_down)}
+```
+
+### cnet plot BP down regulated 6hr
+```{r BP cnet down regulated 6hr}
+if(any(e_go_bp_6hr_down@result$p.adjust <0.01)){
+  bp_cnetplot_6hr_down <- cnetplot(e_go_bp_6hr_down)+
+    ggtitle("CNet Plot BP down regulated 6hr")
+  print(bp_cnetplot_6hr_down)}
+```
+
+### dotplot BP down regulated 6hr
+
+```{r BP dotplot down regulated 6hr}
+if(any(e_go_bp_6hr_down@result$p.adjust <0.01)){
+  bp_dotplot_6hr_down <- dotplot(e_go_bp_6hr_down)+
+    ggtitle("Dot Plot BP down regulated 6hr")
+  print(bp_dotplot_6hr_down)}
+```
+
+### cnet plot MF 6hr down regulated
+
+```{r mf cnet down regulated 6hr}
+if(any(e_go_mf_6hr_down@result$p.adjust <0.01)){
+  mf_cnetplot_6hr_down <- cnetplot(e_go_mf_6hr_down)+
+    ggtitle("CNet Plot MF down regulated 6hr")
+ print(mf_cnetplot_6hr_down) }
+```
+
+### dotplot MF 6hr down regulated
+
+```{r mf dotplot down regulated 6hr}
+if(any(e_go_mf_6hr_down@result$p.adjust <0.01)){
+  mf_dotplot_6hr_down <- dotplot(e_go_mf_6hr_down)+
+    ggtitle("Dot Plot MF down regulated 6hr")
+  print(mf_dotplot_6hr_down)}
 ```
 
