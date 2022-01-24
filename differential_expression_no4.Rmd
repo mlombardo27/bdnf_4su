@@ -2,7 +2,13 @@
 title: "Differential expression no well 4"
 author: "Maddie Lombardo"
 date: "1/14/2022"
-output: html_document
+output:
+  html_document: default
+      toc: true
+      toc_float: true
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(dirname(inputFile), 'docs/index.html')) })
+  
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -17,18 +23,24 @@ library(org.Hs.eg.db)
 library(clusterProfiler)
 ```
 
-reading the functions in that i'll use
+## Steps for Differential Expression 
+
+### Reading the functions in that I'll be using in this document
 ```{r reading the functions in}
 source(here::here('run_standard_deseq.R'))
 source(here::here('make_volcano_plot.R'))
+source(here::here('filter_significant.R'))
+source(here::here('cluster_profiler.R'))
 ```
 
-reading in the files
+### reading in the file
 ```{r read in files}
 feature_counts_file_path <- file.path(here::here("data","feature_counts_bdnf_No4"))
 ```
 
-running a deseq 1hr
+## Creating the objects for GO analysis
+
+### DeSeq 1 hr
 ```{r deseq2 1h}
 one_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL",
                               contrast_grep = "BDNF", 
@@ -37,12 +49,15 @@ one_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTRO
                               contrastName = 'BDNF')
 ```
 
-make a volcano plot 1hr
+### Make a volcano plot 1hr
 ```{r volcano plot 1h}
-one_hour_volcano <- make_volcano_plot(one_hour_dds$results_table)
+one_hour_volcano <- make_volcano_plot(one_hour_dds$results_table)+
+  ggtitle("Volcano Plot 1 Hour")
+
+print(one_hour_volcano)
 ```
 
-deseq 2hr
+### DeSeq 2hr
 ```{r deseq 2h}
 two_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL",
                               contrast_grep = "BDNF", 
@@ -51,12 +66,15 @@ two_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTRO
                               contrastName = 'BDNF')
 ```
 
-volcano 2hr
+### Make volcano plot 2hr
 ```{r volcano 2h}
-two_hr_volcano <- make_volcano_plot(two_hour_dds$results_table)
+two_hr_volcano <- make_volcano_plot(two_hour_dds$results_table)+
+  ggtitle("Volcano Plot 2 Hours")
+
+print(two_hr_volcano)
 ```
 
-deseq 6h
+### DeSeq 6h
 ```{r deseq 6h}
 six_hr_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL",
                               contrast_grep = "BDNF", 
@@ -65,111 +83,129 @@ six_hr_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL"
                               contrastName = 'BDNF')
 ```
 
-volcano 6h
+### Make volcano plot 6h
 ```{r volcano 6h}
-six_hr_volcano <- make_volcano_plot(six_hr_dds$results_table)
+six_hr_volcano <- make_volcano_plot(six_hr_dds$results_table)+
+  ggtitle("Volcano Plot 6 Hours")
+
+print(six_hr_volcano)
 ```
 
-now we are going to use the deseq data to do gene ontology
-hour 1
+## Gene Ontology Setup!
+
+Now we are going to use the deseq data to do gene ontology at each of our time points (1,2, and 6 hours) for both upregulated and downregulated genes.
+
+### GO 1 hr setup
+
+This is grabbing both the up- and down- regulated genes for the 1 hour timepoint.
 ```{r GO 1hr}
 results_1hr <- one_hour_dds$results_table
 
-up_1hr_ensembl <- results_1hr %>% 
-  dplyr::filter(padj < 0.05 & log2FoldChange > 0 ) %>% 
-  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
-  arrange(-log2FoldChange) %>% 
-  pull(ensembl)
+up_1hr_ensembl <- filter_significant(results_1hr,
+                              padj_cutoff = 0.1,
+                              log2Fold_cutoff = 0,
+                              direction = "up")
 
-down_1hr_ensembl <- results_1hr %>% 
-  dplyr::filter(padj < 0.05 & log2FoldChange < 0 ) %>% 
-  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
-  arrange(log2FoldChange) %>% 
-  pull(ensembl)
-
-gp_up_1hr = gost(up_1hr_ensembl, organism = "hsapiens", ordered_query = TRUE) 
-gostplot(gp_up_1hr)
-gp_down_1hr = gost(down_1hr_ensembl, organism = "hsapiens", ordered_query = TRUE)
-gostplot(gp_down_1hr)
-
+down_1hr_ensembl <- filter_significant(results_1hr,
+                              padj_cutoff = 0.1,
+                              log2Fold_cutoff = 0,
+                              direction = "down")
 ```
 
-GO hr 2
+### Gostplot for upregulated genes at 1 hour
+```{r up gostplot 1 hr}
+gp_up_1hr = gost(up_1hr_ensembl, organism = "hsapiens", ordered_query = TRUE) 
+gostplot(gp_up_1hr)
+```
+
+### Gostplot for downregulated genes at 1 hour
+```{r down gostplot 1 hr}
+gp_down_1hr = gost(down_1hr_ensembl, organism = "hsapiens", ordered_query = TRUE)
+gostplot(gp_down_1hr)
+```
+
+### GO hr 2 Setup
+
+This is grabbing both the up- and down- regulated genes for the 2 hour timepoint.
 ```{r go 2h}
 results_2hr <- two_hour_dds$results_table
 
-up_2hr_ensembl <- results_2hr %>% 
-  filter(padj < 0.05 & log2FoldChange > 0 ) %>% 
-  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
-  pull(ensembl)
+up_2hr_ensembl <- filter_significant(results_2hr,
+                              padj_cutoff = 0.1,
+                              log2Fold_cutoff = 0,
+                              direction = "up")
 
-down_2hr_ensembl <- results_2hr %>% 
-  filter(padj < 0.05 & log2FoldChange < 0 ) %>% 
-  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
-  pull(ensembl)
-
-
-
-gp_up_2hr <-  gost(up_2hr_ensembl, organism = "hsapiens")
-
-gp_down_2hr <-  gost(down_2hr_ensembl, organism = "hsapiens")
+down_2hr_ensembl <- filter_significant(results_2hr,
+                              padj_cutoff = 0.1,
+                              log2Fold_cutoff = 0,
+                              direction = "down")
 ```
 
-go 6h
+### Gostplot for upregulated genes at 2 hours
+```{r up gostplot 2 hr}
+gp_up_2hr <-  gost(up_2hr_ensembl, organism = "hsapiens")
+gostplot(gp_up_2hr)
+```
+
+### Gostplot for downregulated genes at 2 hours
+```{r down gostplot 2hr}
+gp_down_2hr <-  gost(down_2hr_ensembl, organism = "hsapiens")
+gostplot(gp_down_2hr)
+```
+
+### GO 6hr Setup
+
+This is grabbing the up- and down- regulated genes at the 6 hour timepoint.
 ```{r go 6h}
 results_6hr <- six_hr_dds$results_table
 
-up_6hr_ensembl <- results_6hr %>% 
-  filter(padj < 0.05 & log2FoldChange > 0 ) %>% 
-  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
-  pull(ensembl)
+up_6hr_ensembl <- filter_significant(results_6hr,
+                              padj_cutoff = 0.1,
+                              log2Fold_cutoff = 0,
+                              direction = "up")
 
-down_6hr_ensembl <- results_6hr %>% 
-  filter(padj < 0.05 & log2FoldChange < 0 ) %>% 
-  mutate(ensembl = gsub("\\..*", "", Geneid)) %>% 
-  pull(ensembl)
-
-gp_up_6hr = gost(up_6hr_ensembl, organism = "hsapiens")
-gp_down_6hr = gost(down_6hr_ensembl, organism = "hsapiens")
+down_6hr_ensembl <- filter_significant(results_6hr,
+                              padj_cutoff = 0.1,
+                              log2Fold_cutoff = 0,
+                              direction = "down")
 ```
 
+### Gostplot for upregulated genes at 6 hrs
 
-```{r clusterprofiler GO 1hr}
+```{r up gostplot 6hr}
+gp_up_6hr = gost(up_6hr_ensembl, organism = "hsapiens")
+gostplot(gp_up_6hr)
+```
 
-bg_ids_1hr <- one_hour_dds$results_table$Geneid %>% gsub("\\..*", "", .) 
+### Gostplot for downregulated genes at 6 hrs
 
-e_go_cc_1hr_up <- enrichGO(gene          = up_1hr_ensembl,
-                universe      = bg_ids_1hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "CC",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
+```{r down gostplot 6hr}
+gp_down_6hr = gost(down_6hr_ensembl, organism = "hsapiens")
+gostplot(gp_down_6hr)
+```
 
-e_go_mf_1hr_up <- enrichGO(gene          = up_1hr_ensembl,
-                universe      = bg_ids_1hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "MF",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
+## its GO time!!!!
 
-e_go_bp_1hr_up <- enrichGO(gene          = up_1hr_ensembl,
-                universe      = bg_ids_1hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "BP",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
+### GO 1 hr
+```{r clusterprofiler GO 1hr, up}
 
+e_go_cc_1hr_up <- cp_GO_analysis(up_1hr_ensembl, one_hour_dds, typeGO = "cc")
+
+e_go_mf_1hr_up <- cp_GO_analysis(up_1hr_ensembl, one_hour_dds, typeGO = "mf")
+
+e_go_bp_1hr_up <- cp_GO_analysis(up_1hr_ensembl, one_hour_dds, typeGO = "bp")
+```
+
+### Cnet plot CC 1 hour
+```{r cnet plot cc 1hr}
 if(any(e_go_cc_1hr_up@result$p.adjust <0.01)){
-  cnetplot(e_go_cc_1hr_up)
+  cc_cnet_1hr <- cnetplot(e_go_cc_1hr_up)+
+    ggtitle("C Net Plot CC 1 hr")}
+
+print(cc_cnet_1hr)
+```
+
+### dotplot CC 1hr
   dotplot(e_go_cc_1hr_up)
   }
 
@@ -179,38 +215,13 @@ if(any(e_go_bp_1hr_up@result$p.adjust <0.01)){
 
 ```
 
-```{r clusterProfiler GO at 2hr}
-bg_ids_2hr <- two_hour_dds$results_table$Geneid %>% gsub("\\..*", "", .) 
+```{r clusterProfiler GO at 2hr, up}
+e_go_cc_2hr_up <- cp_GO_analysis(up_2hr_ensembl, two_hour_dds, typeGO = "cc")
 
-e_go_cc_2hr_up <- enrichGO(gene          = up_2hr_ensembl,
-                universe      = bg_ids_2hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "CC",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
+e_go_mf_2hr_up <- cp_GO_analysis(up_2hr_ensembl, two_hour_dds, typeGO = "mf")
 
-e_go_mf_2hr_up <- enrichGO(gene          = up_2hr_ensembl,
-                universe      = bg_ids_2hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "MF",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
-
-e_go_bp_2hr_up <- enrichGO(gene          = up_2hr_ensembl,
-                universe      = bg_ids_2hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "BP",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
+e_go_bp_2hr_up <- cp_GO_analysis(up_2hr_ensembl, two_hour_dds, typeGO = "bp")
+```
 
 if(any(e_go_cc_2hr_up@result$p.adjust <0.01)){
   cnetplot(e_go_cc_2hr_up)
@@ -222,38 +233,13 @@ if(any(e_go_bp_2hr_up@result$p.adjust <0.01)){
   dotplot(e_go_bp_2hr_up)}
 ```
 
-```{r clusterProfiler GO at 6hr}
-bg_ids_6hr <- six_hr_dds$results_table$Geneid %>% gsub("\\..*", "", .) 
+```{r clusterProfiler GO at 6hr,up}
+e_go_cc_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hour_dds, typeGO = "cc")
 
-e_go_cc_6hr_up <- enrichGO(gene          = up_6hr_ensembl,
-                universe      = bg_ids_6hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "CC",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
+e_go_mf_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hour_dds, typeGO = "mf")
 
-e_go_mf_6hr_up <- enrichGO(gene          = up_6hr_ensembl,
-                universe      = bg_ids_6hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "MF",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
-
-e_go_bp_6hr_up <- enrichGO(gene          = up_6hr_ensembl,
-                universe      = bg_ids_6hr,
-                keyType = "ENSEMBL",
-                OrgDb         = org.Hs.eg.db,
-                ont           = "BP",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
-                qvalueCutoff  = 0.05,
-        readable      = TRUE)
+e_go_bp_6hr_up <- cp_GO_analysis(up_6hr_ensembl, six_hour_dds, typeGO = "bp")
+```
 
 if(any(e_go_cc_6hr_up@result$p.adjust <0.01)){
   cnetplot(e_go_cc_6hr_up)
