@@ -21,7 +21,7 @@ new_RNA <- read_csv(new_RNA_file_path)
 ```
 
 ```{r}
-the_stuff <- list("DYNC1H1","DYNC1I2","DYNC1LI1","DYNLL1","DCTN1","DCTN2","DCTN3","HOOK3","BICD2", "KIF1A", "KIF1B", "KIF5A","KIF5B","KIF13A","KIF13B")
+the_stuff <- list("DYNC1H1","DYNC1I2","DYNC1LI1","DYNLL1","DCTN1","DCTN2","DCTN3","HOOK3","BICD2", "KIF1A", "KIF1B", "KIF5A","KIF5B","KIF5C","KIF13A","KIF13B")
 new_RNA %>% 
   filter(symbol %in% the_stuff) %>% 
   ggplot(mapping = aes(x = time , y = fraction_new_rna, color = condition))+
@@ -46,6 +46,18 @@ full_de %>%
   facet_wrap(~gene_name) + 
   ggpubr::theme_pubr() + 
   labs(fill = "Change is Significant?",x = 'Labelling + BDNF time',ylab = 'Log2FoldChange Total RNA') 
+```
+
+```{r graph no time 6}
+new_RNA %>% 
+  filter(symbol %in% the_stuff) %>% 
+  filter(time != 6) %>% 
+  ggplot(mapping = aes(x = time , y = fraction_new_rna, color = condition))+
+  geom_jitter(width = 0.1)+
+  geom_smooth(se = FALSE)+
+  theme_pubr(legend = c("right"))+
+  labs_pubr(base_size = 8)+
+    facet_wrap(~symbol, scales = "free")
 ```
 
 
