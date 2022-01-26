@@ -1,0 +1,19 @@
+gene,confirmed?,cargo
+BICD2,YES,"COP1-independent Golgi-to-ER vesicles, Golgi vesicles, nuclear pore complexes"
+BICDL1,YES,RAB6 vesicles
+SPDL1,YES,kinetochore
+HOOK1,YES,"RAB5 early endosomes, clathrin-independent cargoes"
+HOOK3,YES,"RAB5 early endosomes, Golgi"
+NIN,YES,unknown
+NINL,YES,MICAL3 and RAB8A containing vesicles
+RAB11FIP3,YES,recycling endosomes
+BICD1,NO,"COP1-independent Golgi-to-ER vesicles, microtubule arrays"
+BICDL2,NO,RAB13 vesicles
+HOOK2,NO,"spermatid intramanchette trafficking, centrosomal proteins"
+CCDC88A,NO,unknown
+CCDC88B,NO,secretory lysosomes (lytic granules)
+CCDC88C,NO,unknown
+NUMA,NO,minus ends of microtubules in the spindle
+TRAK1,NO,mitochondria
+TRAK2,NO,mitochondria
+HAP1,NO,many membrane cargoes
