@@ -1,0 +1,84 @@
+---
+title: "Differential Expression on Converted Reads"
+author: "Maddie Lombardo"
+date: "2/9/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(annotables)
+library(PCAtools)
+library(gprofiler2)
+library(pcaExplorer)
+library(AnnotationDbi)
+library(org.Hs.eg.db)
+library(clusterProfiler)
+```
+
+This function will be organizing this data into 2 tables that can be input into a Deseq
+I will be creating a table 1 that will act as the counts data frame that includes the gene and the min2 counts
+Table 2 will act as the metadata for the deseq
+
+```{r reading in file path}
+grandslam_new_RNA_file_path <- file.path(here::here('data/grandslam_new_rna.csv'))
+
+grandslam_new_rna <- read_csv(grandslam_new_RNA_file_path)
+```
+
+```{r filtering out any estimate new credible level > 20%}
+grandslam_new_rna_filtered <- grandslam_new_rna %>% 
+  filter(estimate_new_credible_interval < 0.2)
+```
+
+```{r filter 6 hr conversions}
+filtered_6hr <- grandslam_new_rna_filtered %>% 
+  filter(time == 6)
+  
+wider_6_hr_table <- filtered_6hr %>% 
+  select(gene, min2, SampleID) %>% 
+  mutate(min2 = round(min2)) %>% 
+  pivot_wider(names_from = SampleID, values_from = min2, values_fill = 0)
+```
+
+```{r read in bayesian new ratio rna}
+new_fraction_bayesian_file_path <- file.path(here::here('data/new_ratio_bayesian_p_de.csv'))
+
+new_ratio_p_de <- read.csv(new_fraction_bayesian_file_path)
+```
+
+determining categories comparing new vs total rna's expression
+
+```{r categorizing new vs total}
+counts_by_hr <- new_ratio_p_de %>% 
+    filter(!(total_rna_sig == 'not_significant' & new_rna_sig == 'bdnf_equals_control')) %>% 
+    group_by(time, new_rna_sig, total_rna_sig) %>% 
+    filter(new_rna_sig != 'unclear') %>% 
+    summarize(count = n())
+
+counts_by_hr %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+  geom_col() +
+  facet_wrap(vars(time),scales = 'free_y')
+```
+
+```{r getting genes for validation by jobert}
+gene_2hr_high4su_downreg <- new_ratio_p_de %>% 
+  filter(time ==2, new_rna_sig == 'bdnf_higher_new_rna', total_rna_sig == 'downregulated') %>% 
+  slice_min(log2FoldChange, n=10) %>% 
+  arrange(-mean_diff) %>% 
+  select(gene, gene_name, mean_diff, log2FoldChange, mean_bdnf_ntr, mean_control_ntr)
+
+write_csv(gene_2hr_high4su_downreg, "top10gene_2hr_high4su_downreg.csv")
+
+gene_2hr_high4su_notsig <- new_ratio_p_de %>% 
+  filter(time ==2, new_rna_sig == 'bdnf_higher_new_rna', total_rna_sig == 'not_significant') %>%
+  filter(!is.na(log2FoldChange)) %>% 
+  slice_min(mean_diff, n=10) %>% 
+  arrange(-mean_bdnf_ntr) %>% 
+  select(gene, gene_name, mean_diff, log2FoldChange, mean_bdnf_ntr, mean_control_ntr)
+
+write_csv(gene_2hr_high4su_notsig, "top10gene_2hr_notsig.csv")
+```
+
