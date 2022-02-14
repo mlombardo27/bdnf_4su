@@ -18,13 +18,6 @@ library(clusterProfiler)
 library(RColorBrewer)
 ```
 
-These are all functions I will be using for the GO analysis
-```{r reading the functions in}
-source(here::here('run_standard_deseq.R'))
-source(here::here('make_volcano_plot.R'))
-source(here::here('filter_significant.R'))
-source(here::here('cluster_profiler_GO_analysis.R'))
-```
 
 This function will be organizing this data into 2 tables that can be input into a Deseq
 I will be creating a table 1 that will act as the counts data frame that includes the gene and the min2 counts
