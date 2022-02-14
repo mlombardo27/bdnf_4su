@@ -15,6 +15,15 @@ library(pcaExplorer)
 library(AnnotationDbi)
 library(org.Hs.eg.db)
 library(clusterProfiler)
+library(RColorBrewer)
+```
+
+These are all functions I will be using for the GO analysis
+```{r reading the functions in}
+source(here::here('run_standard_deseq.R'))
+source(here::here('make_volcano_plot.R'))
+source(here::here('filter_significant.R'))
+source(here::here('cluster_profiler_GO_analysis.R'))
 ```
 
 This function will be organizing this data into 2 tables that can be input into a Deseq
@@ -52,33 +61,22 @@ determining categories comparing new vs total rna's expression
 
 ```{r categorizing new vs total}
 counts_by_hr <- new_ratio_p_de %>% 
-    filter(!(total_rna_sig == 'not_significant' & new_rna_sig == 'bdnf_equals_control')) %>% 
+  filter(!(total_rna_sig == 'not_significant' & new_rna_sig =='bdnf_equals_control')) %>% 
     group_by(time, new_rna_sig, total_rna_sig) %>% 
     filter(new_rna_sig != 'unclear') %>% 
     summarize(count = n())
 
 counts_by_hr %>% 
-  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
-  geom_col() +
-  facet_wrap(vars(time),scales = 'free_y')
+    ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_brewer(palette = "Paired")+
+    geom_col() +
+    facet_wrap(vars(time),scales = 'free_x')+
+    coord_flip()+
+    ggtitle("Categorizing New Vs. Total RNA") +
+    labs(y = "Number of Genes per Timepoint", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Levels with BDNF \nCompared to Control")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
 ```
 
-```{r getting genes for validation by jobert}
-gene_2hr_high4su_downreg <- new_ratio_p_de %>% 
-  filter(time ==2, new_rna_sig == 'bdnf_higher_new_rna', total_rna_sig == 'downregulated') %>% 
-  slice_min(log2FoldChange, n=10) %>% 
-  arrange(-mean_diff) %>% 
-  select(gene, gene_name, mean_diff, log2FoldChange, mean_bdnf_ntr, mean_control_ntr)
-
-write_csv(gene_2hr_high4su_downreg, "top10gene_2hr_high4su_downreg.csv")
-
-gene_2hr_high4su_notsig <- new_ratio_p_de %>% 
-  filter(time ==2, new_rna_sig == 'bdnf_higher_new_rna', total_rna_sig == 'not_significant') %>%
-  filter(!is.na(log2FoldChange)) %>% 
-  slice_min(mean_diff, n=10) %>% 
-  arrange(-mean_bdnf_ntr) %>% 
-  select(gene, gene_name, mean_diff, log2FoldChange, mean_bdnf_ntr, mean_control_ntr)
-
-write_csv(gene_2hr_high4su_notsig, "top10gene_2hr_notsig.csv")
-```
 
