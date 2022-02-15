@@ -1,0 +1,43 @@
+---
+title: "create deseq table from grandslam data"
+author: "Maddie Lombardo"
+date: "2/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(PCAtools)
+library(gprofiler2)
+library(pcaExplorer)
+library(clusterProfiler)
+library(RColorBrewer)
+library(ggpubr)
+library(GOfuncR)
+```
+
+This function will be organizing this data into 2 tables that can be input into a Deseq
+I will be creating a table 1 that will act as the counts data frame that includes the gene and the min2 counts
+Table 2 will act as the metadata for the deseq
+
+```{r reading in file path}
+grandslam_new_RNA_file_path <- file.path(here::here('data/grandslam_new_rna.csv'))
+
+grandslam_new_rna <- read_csv(grandslam_new_RNA_file_path)
+```
+
+```{r filtering out any estimate new credible level > 20%}
+grandslam_new_rna_filtered <- grandslam_new_rna %>% 
+  filter(estimate_new_credible_interval < 0.2)
+```
+
+```{r filter 6 hr conversions}
+filtered_6hr <- grandslam_new_rna_filtered %>% 
+  filter(time == 6)
+  
+wider_6_hr_table <- filtered_6hr %>% 
+  select(gene, min2, SampleID) %>% 
+  mutate(min2 = round(min2)) %>% 
+  pivot_wider(names_from = SampleID, values_from = min2, values_fill = 0)
+```

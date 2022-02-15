@@ -1,0 +1,27 @@
+---
+title: "YTH bound mRNAs w BDNF"
+author: "Maddie Lombardo"
+date: "2/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(PCAtools)
+library(gprofiler2)
+library(pcaExplorer)
+library(clusterProfiler)
+library(RColorBrewer)
+library(ggpubr)
+library(GOfuncR)
+```
+
+
+```{r read in file}
+YTH_bound_mrna_file_path <- file.path(here::here("data","YTH bound mRNAs.csv"))
+
+yth_bound_mrna <- read_csv(YTH_bound_mrna_file_path)
+```
+
+want to look at the genes downregulated with high fraction new mrna at 2hr to see if YTH is associated with the decay

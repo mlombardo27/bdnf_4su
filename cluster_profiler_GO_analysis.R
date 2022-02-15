@@ -3,13 +3,13 @@
 #the process of interest (bp, cc, mf)
 
 cp_GO_analysis = function(significant_genes, 
-                          dds_results,
+                          bg_ids,
                           typeGO = "cc"){
   library(tidyverse)
   library(clusterProfiler)
   
-  bg_ids <- dds_results$results_table$Geneid %>% 
-    gsub("\\..*", "", .)
+  # bg_ids <- dds_results$results_table$Geneid %>% 
+  #   gsub("\\..*", "", .)
   
   if(typeGO == "cc"){
     go_result <- enrichGO(gene          = significant_genes,

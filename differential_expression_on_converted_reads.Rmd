@@ -16,33 +16,10 @@ library(AnnotationDbi)
 library(org.Hs.eg.db)
 library(clusterProfiler)
 library(RColorBrewer)
+library(ggpubr)
+library(GOfuncR)
 ```
 
-
-This function will be organizing this data into 2 tables that can be input into a Deseq
-I will be creating a table 1 that will act as the counts data frame that includes the gene and the min2 counts
-Table 2 will act as the metadata for the deseq
-
-```{r reading in file path}
-grandslam_new_RNA_file_path <- file.path(here::here('data/grandslam_new_rna.csv'))
-
-grandslam_new_rna <- read_csv(grandslam_new_RNA_file_path)
-```
-
-```{r filtering out any estimate new credible level > 20%}
-grandslam_new_rna_filtered <- grandslam_new_rna %>% 
-  filter(estimate_new_credible_interval < 0.2)
-```
-
-```{r filter 6 hr conversions}
-filtered_6hr <- grandslam_new_rna_filtered %>% 
-  filter(time == 6)
-  
-wider_6_hr_table <- filtered_6hr %>% 
-  select(gene, min2, SampleID) %>% 
-  mutate(min2 = round(min2)) %>% 
-  pivot_wider(names_from = SampleID, values_from = min2, values_fill = 0)
-```
 
 ```{r read in bayesian new ratio rna}
 new_fraction_bayesian_file_path <- file.path(here::here('data/new_ratio_bayesian_p_de.csv'))
@@ -69,7 +46,116 @@ counts_by_hr %>%
     labs(y = "Number of Genes per Timepoint", 
          x = "Total RNA Categorization",
          fill = "New RNA Levels with BDNF \nCompared to Control")+
-  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))+
+  theme_pubclean()
 ```
 
+setting up GO analysis for: not_sig_low_new_rna_1hr, upreg_no_new_rna_2hr, not_sig_high_new_rna_2hr, downreg_high_new_rna_2hr
 
+first setup: not_sig_low_new_rna_1hr: category: BUT WHY?
+```{r GO analysis not_sig_low_new_rna_1hr}
+#read in my function
+source(here::here('cluster_profiler_GO_analysis.R'))
+
+not_sig_low_new_rna_1hr <- new_ratio_p_de %>% 
+  filter(time == 1 & total_rna_sig == 'not_significant' & new_rna_sig == 'bdnf_lower_new_rna') %>% 
+  pull(gene) %>% 
+  gsub("\\..*", "", .)
+
+bg_ids <- new_ratio_p_de$gene %>% 
+  gsub("\\..*", "", .) %>% 
+  unique()
+
+cc_GO_1hr_not_sig_low_new <- cp_GO_analysis(not_sig_low_new_rna_1hr, bg_ids, typeGO = "cc")
+#no enriched terms
+
+mf_GO_1hr_not_sig_low_new <- cp_GO_analysis(not_sig_low_new_rna_1hr, bg_ids, typeGO = "mf")
+#no enriched terms
+
+bp_GO_1hr_not_sig_low_new <- cp_GO_analysis(not_sig_low_new_rna_1hr, bg_ids, typeGO = "bp")
+#no enriched terms
+```
+no enriched terms so moving on....
+
+next up: upreg_no_new_rna_2hr: category: RNA stabilized
+```{r GO analysis upreg_no_new_rna_2hr}
+upreg_no_new_rna_2hr <- new_ratio_p_de %>% 
+  filter(time == 2 & total_rna_sig == "upregulated" & new_rna_sig == "bdnf_equals_control")%>% 
+  pull(gene) %>% 
+  gsub("\\..*", "", .)
+
+cc_GO_2hr_upreg_equal_to_control <- cp_GO_analysis(upreg_no_new_rna_2hr, bg_ids, typeGO = "cc")
+
+cnetplot(cc_GO_2hr_upreg_equal_to_control)
+
+mf_GO_2hr_upreg_equal_to_control <- cp_GO_analysis(upreg_no_new_rna_2hr, bg_ids, typeGO = "mf")
+
+cnetplot(mf_GO_2hr_upreg_equal_to_control)
+
+bp_GO_2hr_upreg_equal_to_control <- cp_GO_analysis(upreg_no_new_rna_2hr, bg_ids, typeGO = "bp")
+#no biological process terms were enriched here
+```
+there were some enriched terms so made cnet plots for those; lots of collagen rna stabilized with BDNF treatment; collagen associated w/ ECM structure
+
+next: not_sig_high_new_rna_2hr: category: BUT WHY?
+```{r GO analysis not_sig_high_new_rna_2hr}
+not_sig_high_new_2hr <- new_ratio_p_de %>% 
+  filter(time == 2 & total_rna_sig == "not_significant" & new_rna_sig == "bdnf_higher_new_rna") %>% 
+  slice_min(mean_diff,n = 500) %>% 
+  pull(gene) %>% 
+  gsub("\\..*", "", .)
+
+cc_GO_2hr_not_sig_high_new <- cp_GO_analysis(not_sig_high_new_2hr, bg_ids, typeGO = "cc")
+#no enriched terms
+
+mf_GO_2hr_not_sig_high_new <- cp_GO_analysis(not_sig_high_new_2hr, bg_ids, typeGO = "mf")
+
+cnetplot(mf_GO_2hr_not_sig_high_new)
+
+bp_GO_2hr_not_sig_high_new <- cp_GO_analysis(not_sig_high_new_2hr, bg_ids, typeGO = "bp")
+#no enriched terms
+```
+for the molecular function GO, the enriched terms were associated with DNA binding transcription repressor activity and DNA binding transcription activator activity; also RNA polymerase II specific
+Genes that overlap from transcription repressor and activator activity: NR3C1, CREB3L1, CEBPB, PPARA
+
+next: downreg_high_new_rna_2hr: category: translation dependent decay????
+```{r GO analysis downreg_high_new_rna_2hr}
+downreg_high_new_rna_2hr <- new_ratio_p_de %>% 
+  filter(time == 2 & total_rna_sig == "downregulated" & new_rna_sig == "bdnf_higher_new_rna") %>% 
+  slice_min(mean_diff, n = 500) %>% 
+  pull(gene) %>% 
+  gsub("\\..*", "", .)
+
+cc_GO_2hr_downreg_high_new <- cp_GO_analysis(downreg_high_new_rna_2hr, bg_ids, typeGO = "cc")
+#no enriched terms
+
+mf_GO_2hr_downreg_high_new <- cp_GO_analysis(downreg_high_new_rna_2hr, bg_ids, typeGO = "mf")
+
+cnetplot(mf_GO_2hr_downreg_high_new)
+
+bp_GO_2hr_downreg_high_new <- cp_GO_analysis(downreg_high_new_rna_2hr, bg_ids, typeGO = "bp")
+#no enriched terms
+```
+for MF GO, enriched terms associated with DNA binding transcription repressor activity
+
+
+Next, I am going to look at how many of the genes in the '2 hr, not sig, bdnf higher new rna' are upregulated at 6 hours (perhaps they are becoming upregulated?)
+```{r make barplot determining if 2 hr not sig and 6 hr upreg genes overlap}
+genes_2hr_not_sig_higher_new <- new_ratio_p_de %>% 
+  filter(time == 2 & total_rna_sig == "not_significant" & new_rna_sig == "bdnf_higher_new_rna")
+
+genes_6hr <- new_ratio_p_de %>% 
+  filter(time == 6)
+
+genes_overlap <- genes_2hr_not_sig_higher_new %>% 
+  left_join(genes_6hr, by = 'gene', suffix = c('_two', '_six'))
+
+genes_overlap %>% 
+  group_by(total_rna_sig_two, total_rna_sig_six) %>% 
+  summarize(counts = n()) %>% 
+  ggplot(aes(x = total_rna_sig_two, y = counts, fill = total_rna_sig_six))+
+    scale_fill_brewer(palette = "Paired")+
+    geom_col() +
+  theme_pubclean()
+```
+this graph shows that most of the genes that were not significant a 2 hours do not become upregulated at 6hrs
