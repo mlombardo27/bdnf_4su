@@ -32,12 +32,101 @@ grandslam_new_rna_filtered <- grandslam_new_rna %>%
   filter(estimate_new_credible_interval < 0.2)
 ```
 
-```{r filter 6 hr conversions}
-filtered_6hr <- grandslam_new_rna_filtered %>% 
-  filter(time == 6)
-  
-wider_6_hr_table <- filtered_6hr %>% 
-  select(gene, min2, SampleID) %>% 
+creating table 1
+```{r filter conversions at specified timepoint and make table 1 from it}
+create_table_1 <- function(filtered_grandslam_rna, 
+                          timepoint = "6"){
+    filtered_df <- filtered_grandslam_rna %>% 
+      filter(time == timepoint) %>% 
+      select(gene, min2, SampleID) %>% 
   mutate(min2 = round(min2)) %>% 
-  pivot_wider(names_from = SampleID, values_from = min2, values_fill = 0)
+  pivot_wider(names_from = SampleID, values_from = min2, values_fill = 0) %>% 
+  column_to_rownames('gene') %>% 
+      as.data.frame()
+    
+    return(filtered_df)
+  }
+                         
 ```
+
+creating table 2
+```{r make table 2 for metadata table}
+create_metatable <- function(table_1){
+  meta_table <- tibble(sample = table_1 %>%  
+  colnames()) %>% 
+  separate(sample, into = c("condition", "well", "time"), remove = FALSE) %>% 
+  column_to_rownames('sample') %>% 
+  mutate(factor_name = factor(condition, levels = c("control","bdnf")))
+  
+  return(meta_table)
+}
+```
+
+now for the deseq part
+```{r deseq}
+library("DESeq2")
+
+min2_deseq <- function(my_table, time){
+  table_1 <- create_table_1(my_table,time)
+  meta_table <- create_metatable(table_1)
+  
+  dds_min2 <- DESeqDataSetFromMatrix(countData = table_1,
+                                   colData = meta_table,
+                                   design = ~ factor_name)
+
+dds_min2 <- DESeq(dds_min2)
+res_min2 <- results(dds_min2) %>% 
+  as.data.frame()
+browser()
+
+return(res_min2)
+}
+```
+
+testing function on time 2
+```{r test new function on time 2}
+time2 <- min2_deseq(grandslam_new_rna_filtered, time = 2)
+
+time2 %>% 
+  ggplot(mapping = aes(x = pvalue)) + 
+  geom_histogram()
+```
+
+using function on time 1 (it works!)
+```{r time 1 pvalue chart}
+time1 <- min2_deseq(grandslam_new_rna_filtered, time =1)
+
+time1 %>% 
+  ggplot(mapping = aes(x = pvalue)) + 
+  geom_histogram()
+```
+
+time 6
+```{r time 6 pvalue chart}
+time6 <- min2_deseq(grandslam_new_rna_filtered, time =6)
+
+time6 %>% 
+  ggplot(mapping = aes(x = pvalue)) + 
+  geom_histogram()
+```
+
+make 1 table
+```{r squish together} 
+de_list <- list(time1,time2,time6) #make a list of whatever you called the 3 reuslts
+samp_ids <- c(1,2,6)  #one two six
+full_de_min2 <- purrr::map2(de_list, samp_ids, ~cbind(.x, time = .y)) %>% 
+    data.table::rbindlist(.)
+```
+
+```{r read in bayesian shizz}
+bayesian_fp <- file.path("data","new_ratio_bayesian_p_de.csv")
+
+new_ratio_p <- read_csv(bayesian_fp)
+```
+
+we making a log2foldchange graph comparing new to total
+```{r log2fold new vs total}
+full_de_min2 %>% 
+  left_join(new_ratio_p, by = c(""))
+```
+
