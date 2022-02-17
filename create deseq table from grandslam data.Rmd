@@ -36,13 +36,12 @@ creating table 1
 ```{r filter conversions at specified timepoint and make table 1 from it}
 create_table_1 <- function(filtered_grandslam_rna, 
                           timepoint = "6"){
-    filtered_df <- filtered_grandslam_rna %>% 
+    
+  filtered_df <- filtered_grandslam_rna %>% 
       filter(time == timepoint) %>% 
       select(gene, min2, SampleID) %>% 
-  mutate(min2 = round(min2)) %>% 
-  pivot_wider(names_from = SampleID, values_from = min2, values_fill = 0) %>% 
-  column_to_rownames('gene') %>% 
-      as.data.frame()
+      mutate(min2 = round(min2)) %>% 
+      pivot_wider(names_from = SampleID, values_from = min2, values_fill = 0) 
     
     return(filtered_df)
   }
@@ -52,11 +51,12 @@ create_table_1 <- function(filtered_grandslam_rna,
 creating table 2
 ```{r make table 2 for metadata table}
 create_metatable <- function(table_1){
+  
   meta_table <- tibble(sample = table_1 %>%  
-  colnames()) %>% 
-  separate(sample, into = c("condition", "well", "time"), remove = FALSE) %>% 
-  column_to_rownames('sample') %>% 
-  mutate(factor_name = factor(condition, levels = c("control","bdnf")))
+                         colnames()) %>% 
+    separate(sample, into = c("condition", "well", "time"), remove = FALSE) %>%
+    column_to_rownames('sample') %>% 
+    mutate(factor_name = factor(condition, levels = c("control","bdnf")))
   
   return(meta_table)
 }
@@ -67,17 +67,30 @@ now for the deseq part
 library("DESeq2")
 
 min2_deseq <- function(my_table, time){
+  
   table_1 <- create_table_1(my_table,time)
+  
+  table_1 <- table_1 %>% column_to_rownames('gene')
+  
   meta_table <- create_metatable(table_1)
   
   dds_min2 <- DESeqDataSetFromMatrix(countData = table_1,
                                    colData = meta_table,
                                    design = ~ factor_name)
+  dds_min2 <- DESeq(dds_min2)
 
-dds_min2 <- DESeq(dds_min2)
-res_min2 <- results(dds_min2) %>% 
-  as.data.frame()
-browser()
+  
+
+
+  res_min2 <- results(dds_min2) %>% 
+    as.data.frame() %>% 
+    rownames_to_column('ensgene') %>% 
+    mutate(ensgene = gsub("\\..*", "", ensgene)) %>%
+    left_join(annotables::grch38 %>% select(ensgene,symbol))
+    
+    
+
+
 
 return(res_min2)
 }
@@ -103,6 +116,7 @@ time1 %>%
 
 time 6
 ```{r time 6 pvalue chart}
+
 time6 <- min2_deseq(grandslam_new_rna_filtered, time =6)
 
 time6 %>% 
@@ -120,13 +134,27 @@ full_de_min2 <- purrr::map2(de_list, samp_ids, ~cbind(.x, time = .y)) %>%
 
 ```{r read in bayesian shizz}
 bayesian_fp <- file.path("data","new_ratio_bayesian_p_de.csv")
-
 new_ratio_p <- read_csv(bayesian_fp)
 ```
 
+
 we making a log2foldchange graph comparing new to total
 ```{r log2fold new vs total}
+
 full_de_min2 %>% 
-  left_join(new_ratio_p, by = c(""))
+  left_join(new_ratio_p %>% 
+              mutate(ensgene = gsub("\\..*", "", gene)), 
+            by = c('ensgene','time'),
+            suffix = c("_total_rna","_new_rna")) %>% 
+  ggplot(aes(x = log2FoldChange_total_rna,
+             y = log2FoldChange_new_rna)) + 
+  geom_point()
+
+##TODO
+##1 - Split the graph by time
+##2 - Fill the graph by whether or not the total log2FoldChange_total_rna is significant
+## padj_total_rna < 0.1
+##3 - Write down what it means for a gene to be in any of the 4 quadrants 
+##4 - Compare results here to the ```{r categorizing new vs total} in "differential expression on coverted" analysis
 ```
 
