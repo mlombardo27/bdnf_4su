@@ -126,7 +126,7 @@ time6 %>%
 
 make 1 table
 ```{r squish together} 
-de_list <- list(time1,time2,time6) #make a list of whatever you called the 3 reuslts
+de_list <- list(time1,time2,time6) #make a list of whatever you called the 3 results
 samp_ids <- c(1,2,6)  #one two six
 full_de_min2 <- purrr::map2(de_list, samp_ids, ~cbind(.x, time = .y)) %>% 
     data.table::rbindlist(.)
@@ -140,21 +140,42 @@ new_ratio_p <- read_csv(bayesian_fp)
 
 we making a log2foldchange graph comparing new to total
 ```{r log2fold new vs total}
+significant_genes <- full_de_min2 %>%
+  filter(log2FoldChange_total_rna > 2 & padj_total_rna < 0.1) %>% 
+  pull(gene_name_total_rna)
 
-full_de_min2 %>% 
+full_de_min2 <- full_de_min2 %>% 
   left_join(new_ratio_p %>% 
               mutate(ensgene = gsub("\\..*", "", gene)), 
             by = c('ensgene','time'),
-            suffix = c("_total_rna","_new_rna")) %>% 
-  ggplot(aes(x = log2FoldChange_total_rna,
-             y = log2FoldChange_new_rna)) + 
-  geom_point()
+            suffix = c("_total_rna","_new_rna")) %>%
+  filter(!is.na(padj_total_rna)) %>% 
+ mutate(significant_log2fold_total = padj_total_rna < 0.1) 
 
-##TODO
-##1 - Split the graph by time
-##2 - Fill the graph by whether or not the total log2FoldChange_total_rna is significant
-## padj_total_rna < 0.1
-##3 - Write down what it means for a gene to be in any of the 4 quadrants 
+my_color_palette = c("#4cbab3", "#ee6352", "#59cd90", "#fac05e", "#3fa7d6")
+  
+full_de_min2 %>% 
+  mutate(plot_name = ifelse(log2FoldChange_total_rna > 3 & padj_total_rna < 0.05, gene_name_total_rna, NA)) %>% 
+  ggplot(aes(x = log2FoldChange_total_rna,
+             y = log2FoldChange_new_rna,
+             fill =significant_log2fold_total, 
+             color = significant_log2fold_total))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  geom_point(pch = 21)+
+  scale_colour_manual(values = my_color_palette)+
+  geom_jitter()+
+  facet_wrap(vars(time))+
+  geom_text_repel(aes(label = plot_name), color = "black")
+
 ##4 - Compare results here to the ```{r categorizing new vs total} in "differential expression on coverted" analysis
 ```
+explaining the graph quadrants:
+close to center: these genes do not have large/significant changes in expression
+1(top left): these genes have a log 2fold change increase in new rna but a decrease in total rna
+2(top right): these genes have both a log2fold change increase in new and total rna
+3(bottom right): these genes have an increase change in total rna but a decreased change in new fraction rna
+4(bottom left): these genes have both a decrease change in total and new rna
 
+comparing to categorizing new vs total:
+Are there any exciting new genes or categories of genes? 
