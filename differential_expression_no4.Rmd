@@ -28,6 +28,7 @@ source(here::here('run_standard_deseq.R'))
 source(here::here('make_volcano_plot.R'))
 source(here::here('filter_significant.R'))
 source(here::here('cluster_profiler_GO_analysis.R'))
+
 ```
 
 ### reading in the file
@@ -48,8 +49,8 @@ one_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTRO
 
 ### Make a volcano plot 1hr
 ```{r volcano plot 1h}
-one_hour_volcano <- make_volcano_plot(one_hour_dds$results_table)+
-  ggtitle("Volcano Plot 1 Hour")
+one_hour_volcano <- label_significant(one_hour_dds$results_table, log2FoldCut = 2.5, log10padj = 30)+
+  ggtitle("Volcano Plot 1 Hour - Well 4 removed")
 
 print(one_hour_volcano)
 ```
@@ -65,8 +66,8 @@ two_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTRO
 
 ### Make volcano plot 2hr
 ```{r volcano 2h}
-two_hr_volcano <- make_volcano_plot(two_hour_dds$results_table)+
-  ggtitle("Volcano Plot 2 Hours")
+two_hr_volcano <- label_significant(two_hour_dds$results_table, log2FoldCut = 2.5, log10padj = 30)+
+  ggtitle("Volcano Plot 2 Hours - well 4 removed")
 
 print(two_hr_volcano)
 ```
@@ -82,8 +83,8 @@ six_hr_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL"
 
 ### Make volcano plot 6h
 ```{r volcano 6h}
-six_hr_volcano <- make_volcano_plot(six_hr_dds$results_table)+
-  ggtitle("Volcano Plot 6 Hours")
+six_hr_volcano <- label_significant(six_hr_dds$results_table, log2FoldCut = 2.5, log10padj = 30)+
+  ggtitle("Volcano Plot 6 Hours - well 4 removed")
 
 print(six_hr_volcano)
 ```

@@ -25,7 +25,7 @@ featureCounts_file_path <- file.path(here::here(),"data","feature_counts_bdnf_fu
 
 meta_file_path <- file.path(here::here(),"data", "full_experiment_metadata.csv")
 
-metadata <- fread(meta_file_path)
+metadata <- read_csv(meta_file_path)
 
 ```
 
@@ -134,8 +134,9 @@ eigencorplot(p_no4, metavars = c('time',"cond", 'well', 'perc_assigned_hisat3n',
 
 biplot(p_no4,
        x = "PC1",
-       y = "PC2",
-       colby = 'cond')
+       y = "PC3",
+       colby = 'cond',
+       title = "Biplot comparing Condition vs Labelling Time - well 4 removed" )
 ```
 
 I am going to normalize this data, then run a few more data exploratory functions
@@ -144,12 +145,13 @@ normalized_counts_obj <- edgeR::cpm(counts_object)
 
 normalized_p <- PCAtools::pca(normalized_counts_obj, metadata = meta_df, removeVar = 0.1)
 
-eigencorplot(normalized_p, metavars = c('time',"cond", 'well', 'perc_assigned_hisat3n', 'm_assigned_assigned_hisat3n'))
+eigencorplot(normalized_p, metavars = c('time',"cond", 'well', 'perc_assigned_hisat3n', 'm_assigned_assigned_hisat3n'), main = "Eigencor Plot of Normalized BDNF vs Control Principal Components - \nWell 4 Removed")
 
 biplot(normalized_p,
        x = "PC1",
-       y = "PC2",
-       colby = 'cond')
+       y = "PC3",
+       colby = 'cond', 
+       title = "Biplot comparing Condition and Labelling Time - Well 4 Removed")
 ```
 
 
@@ -179,6 +181,6 @@ top_100_PC2 %>%
 make volcano plot
 
 ```{r make volcano}
-make_volcano_plot(res)
+make_volcano_plot(normalized_p$loadings)
 ```
 
