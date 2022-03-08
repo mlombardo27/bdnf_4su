@@ -87,10 +87,6 @@ min2_deseq <- function(my_table, time){
     rownames_to_column('ensgene') %>% 
     mutate(ensgene = gsub("\\..*", "", ensgene)) %>%
     left_join(annotables::grch38 %>% select(ensgene,symbol))
-    
-    
-
-
 
 return(res_min2)
 }
@@ -102,7 +98,8 @@ time2 <- min2_deseq(grandslam_new_rna_filtered, time = 2)
 
 time2 %>% 
   ggplot(mapping = aes(x = pvalue)) + 
-  geom_histogram()
+  geom_histogram()+
+  ggtitle("P Value Chart time 2")
 ```
 
 using function on time 1 (it works!)
@@ -111,7 +108,8 @@ time1 <- min2_deseq(grandslam_new_rna_filtered, time =1)
 
 time1 %>% 
   ggplot(mapping = aes(x = pvalue)) + 
-  geom_histogram()
+  geom_histogram()+
+  ggtitle("P value Chart time 1")
 ```
 
 time 6
@@ -121,7 +119,8 @@ time6 <- min2_deseq(grandslam_new_rna_filtered, time =6)
 
 time6 %>% 
   ggplot(mapping = aes(x = pvalue)) + 
-  geom_histogram()
+  geom_histogram()+
+  ggtitle("Pvalue chart Time 6")
 ```
 
 make 1 table
@@ -141,7 +140,7 @@ new_ratio_p <- read_csv(bayesian_fp)
 we making a log2foldchange graph comparing new to total
 ```{r log2fold new vs total}
 significant_genes <- full_de_min2 %>%
-  filter(log2FoldChange_total_rna > 2 & padj_total_rna < 0.1) %>% 
+  filter(log2FoldChange_total_rna > 2 & padj_total_rna < 0.1)%>% 
   pull(gene_name_total_rna)
 
 full_de_min2 <- full_de_min2 %>% 
@@ -177,5 +176,143 @@ close to center: these genes do not have large/significant changes in expression
 3(bottom right): these genes have an increase change in total rna but a decreased change in new fraction rna
 4(bottom left): these genes have both a decrease change in total and new rna
 
-comparing to categorizing new vs total:
-Are there any exciting new genes or categories of genes? 
+making new rna categorization chart
+```{r new rna categorization}
+full_de_min2 <- full_de_min2 %>% 
+  mutate(new_rna_is_sig = case_when(padj_new_rna < 0.1 & log2FoldChange_new_rna >0 ~"upregulated",
+                                    padj_new_rna < 0.1 & log2FoldChange_new_rna < 0 ~"downregulated",
+                                    TRUE ~"not_significant"))
+
+full_de_min2 <- full_de_min2 %>% 
+  mutate(new_rna_is_sig_looser_crit = case_when(log2FoldChange_new_rna > 0.5 ~"upregulated",
+                                    log2FoldChange_new_rna < -0.5 ~"downregulated",
+                                    TRUE ~"not_significant"))
+
+counts_by_hr <- full_de_min2 %>% 
+    group_by(time, new_rna_is_sig_looser_crit, total_rna_sig_total_rna) %>% 
+    summarize(count = n())
+
+counts_by_hr %>% 
+    ggplot(aes(x = new_rna_is_sig_looser_crit, y = count, fill = total_rna_sig_total_rna))+
+    scale_fill_brewer(palette = "Paired")+
+    geom_col() +
+    facet_wrap(vars(time),scales = 'free_x')+
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n Differential Expression on Labeled RNA - Looser Criteria") +
+    labs(y = "Number of Genes per Timepoint", 
+         x = "New RNA Categorization",
+         fill = "Total RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
+
+pca plots
+
+first by time
+```{r biplotting counts per time for new rna}
+time_1_counts_table <- create_table_1(grandslam_new_rna_filtered, time = '1') %>% 
+  column_to_rownames(var = 'gene') 
+
+colnames(time_1_counts_table) <- toupper(colnames(time_1_counts_table))
+
+time_1_meta <- create_metatable(time_1_counts_table)
+
+time_1_counts_table <- time_1_counts_table[match(rownames(time_1_meta), colnames(time_1_counts_table))]
+
+p_1hr <- PCAtools::pca(time_1_counts_table , metadata = time_1_meta, removeVar = 0.1)
+
+biplot(p_1hr,
+       x = "PC1",
+       y = "PC2",
+       colby = 'condition',
+       legendPosition = 'right',
+       gridlines.major = FALSE,
+       gridlines.minor = FALSE,
+       colLegendTitle = '')
+
+time_2_counts_table <- create_table_1(grandslam_new_rna_filtered, time = '2') %>% 
+  column_to_rownames(var = 'gene')
+
+time_2_meta <- create_metatable(time_2_counts_table)
+
+time_2_counts_table <- time_2_counts_table[match(rownames(time_2_meta), colnames(time_2_counts_table))]
+
+p_2hr <- PCAtools::pca(time_2_counts_table , metadata = time_2_meta, removeVar = 0.1)
+
+biplot(p_2hr,
+       x = "PC1",
+       y = "PC2",
+       colby = 'factor_name',
+       legendPosition = 'right',
+       gridlines.major = FALSE,
+       gridlines.minor = FALSE)
+
+time_6_counts_table <- create_table_1(grandslam_new_rna_filtered, time = '6') %>% 
+  column_to_rownames(var = 'gene')
+
+time_6_meta <- create_metatable(time_6_counts_table)
+
+time_6_counts_table <- time_6_counts_table[match(rownames(time_6_meta), colnames(time_6_counts_table))]
+
+p_6hr <- PCAtools::pca(time_6_counts_table, metadata = time_6_meta, removeVar = 0.1)
+
+biplot(p_6hr,
+       x = "PC1",
+       y = "PC2",
+       colby = 'factor_name',
+       legendPosition = 'right', 
+       gridlines.major = FALSE,
+       gridlines.minor = FALSE)
+```
+
+now altogether
+```{r squished new rna pca plot}
+time_1_counts_table <- time_1_counts_table %>% 
+  rownames_to_column('gene')
+
+time_2_counts_table <- time_2_counts_table %>% 
+  rownames_to_column('gene')
+
+time_6_counts_table <- time_6_counts_table %>% 
+  rownames_to_column('gene')
+
+all_time_points_counts <- left_join(time_1_counts_table, time_2_counts_table, by = 'gene')
+
+all_time_points_counts <- left_join(all_time_points_counts, time_6_counts_table, by = 'gene')
+
+all_time_points_counts <- all_time_points_counts %>% 
+  column_to_rownames(var = 'gene')
+
+all_time_points_meta = create_metatable(all_time_points_counts)
+
+all_time_points_counts <- all_time_points_counts[match(rownames(all_time_points_meta), colnames(all_time_points_counts))]
+
+all_time_points_counts[is.na(all_time_points_counts)] <- 0
+
+p_all_times <- PCAtools::pca(all_time_points_counts, metadata = all_time_points_meta, removeVar = 0.1)
+
+biplot(p_all_times,
+       x = "PC1",
+       y = "PC2",
+       colby = 'factor_name',
+       shape = 'time',
+       legendPosition = 'right',
+       gridlines.major = FALSE,
+       gridlines.minor = FALSE)
+```
+
+screeplots new rna
+```{r screeplots for time and altogether (smooshed)}
+screeplot(p_1hr, title = "Screeplot 1hr")
+
+screeplot(p_2hr, title = "Screeplot 2hr")
+
+screeplot(p_6hr, title = "Screeplot 6hr")
+
+screeplot(p_all_times, title = "Screeplot All time points")
+```
+
+eigencor plots for new rna
+```{r eigencor plots for time and then altogether (smooshed)}
+eigencorplot(p_1hr, metavars = c("time", "condition", "well"))
+```
+

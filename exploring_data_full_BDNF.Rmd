@@ -136,7 +136,8 @@ biplot(p_no4,
        x = "PC1",
        y = "PC3",
        colby = 'cond',
-       title = "Biplot comparing Condition vs Labelling Time - well 4 removed" )
+       shape = 'time',
+       legendPosition = 'right')
 ```
 
 I am going to normalize this data, then run a few more data exploratory functions
