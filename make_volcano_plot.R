@@ -65,7 +65,7 @@ label_significant <- function(res, log2FoldCut = 3, log10padj = 20){
   named_plot <- first_plot +
     geom_text_repel(data = with_name, aes(x = log2FoldChange,
                                           y= -log10(padj),
-                                          label = gene_name),
+                                          label = symbol),
                     show_guide = FALSE)
   
   return(named_plot)
