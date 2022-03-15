@@ -82,7 +82,7 @@ one_hour_m6a <- new_ratio_bayesian_p_de %>%
     select(time,symbol,total_rna_sig,new_rna_sig) %>% 
     filter(!is.na(symbol)) %>% 
     unique() %>% 
-    mutate(m6a_site = symbol %in% m6a) %>% 
+    mutate(m6a_site = symbol %in% m6a$symbol) %>% 
     filter(time == 1) %>% 
     mutate(total_new = paste(total_rna_sig,new_rna_sig,sep = "_")) %>% 
     select(total_new,m6a_site)%>% 
@@ -96,7 +96,7 @@ two_hour_m6a <- new_ratio_bayesian_p_de %>%
     select(time,symbol,total_rna_sig,new_rna_sig) %>% 
     filter(!is.na(symbol)) %>% 
     unique() %>% 
-    mutate(m6a_site = symbol %in% m6a) %>% 
+    mutate(m6a_site = symbol %in% m6a$symbol) %>% 
     filter(time == 2) %>% 
     mutate(total_new = paste(total_rna_sig,new_rna_sig,sep = "_")) %>% 
     select(total_new,m6a_site)  %>% 
@@ -110,20 +110,20 @@ six_hour_m6a <- new_ratio_bayesian_p_de %>%
     select(time,symbol,total_rna_sig,new_rna_sig) %>% 
     filter(!is.na(symbol)) %>% 
     unique() %>% 
-    mutate(m6a_site = symbol %in% m6a) %>% 
+    mutate(m6a_site = symbol %in% m6a$symbol) %>% 
     filter(time == 6) %>% 
     mutate(total_new = paste(total_rna_sig,new_rna_sig,sep = "_")) %>% 
     select(total_new,m6a_site)  %>% 
     table() %>% 
     chisq.test()
 
-corrplot(one_hour_m6a$residuals, is.cor = FALSE)
-corrplot(two_hour_m6a$residuals, is.cor = FALSE)
-corrplot(six_hour_m6a$residuals, is.cor = FALSE)
+corrplot(one_hour_m6a$residuals, is.cor = FALSE, title = "one hour m6a correlation")
+corrplot(two_hour_m6a$residuals, is.cor = FALSE, title = "two hour m6a correlation")
+corrplot(six_hour_m6a$residuals, is.cor = FALSE, title = "6 hour m6a correlation")
 
-corrplot(100*one_hour_m6a$residuals^2/one_hour_m6a$statistic,is.corr = FALSE)
-corrplot(100*two_hour_m6a$residuals^2/two_hour_m6a$statistic,is.corr = FALSE)
-corrplot(100*six_hour_m6a$residuals^2/six_hour_m6a$statistic,is.corr = FALSE)
+corrplot(100*one_hour_m6a$residuals^2/one_hour_m6a$statistic,is.corr = FALSE, title = "one hour m6a correlation - contribution per cell")
+corrplot(100*two_hour_m6a$residuals^2/two_hour_m6a$statistic,is.corr = FALSE, title = "two hour m6a correlation - contribution by cell")
+corrplot(100*six_hour_m6a$residuals^2/six_hour_m6a$statistic,is.corr = FALSE, title = "six hour m6a correlation - contribution by cell")
 ```
 
 
@@ -195,5 +195,11 @@ new_ratio_bayesian_p_de %>%
                                label = 'p.signif') + 
     coord_flip()
 
+```
+
+wanna see what bdnf does to m6a writer complex: METTL3, METTL14, WTAP; and m6a eraser: ALKBH5
+```{r bdnf on m6a writers}
+writer_m6a <- new_ratio_bayesian_p_de %>% 
+  filter(gene_name == c("METTL3", "METTL14", "WTAP"))
 ```
 
