@@ -55,6 +55,15 @@ one_hour_volcano <- label_significant(one_hour_dds$results_table, log2FoldCut = 
 print(one_hour_volcano)
 ```
 
+### pvalue chart for 1hr
+```{r pvalue chart 1hr}
+one_hour_dds$results_table %>% 
+  ggplot(mapping = aes(x = pvalue)) + 
+  geom_histogram()+
+  ggtitle("P Value Chart - time 1hr - total rna")
+```
+
+
 ### DeSeq 2hr
 ```{r deseq 2h}
 two_hour_dds <- run_standard_deseq(feature_counts_file_path, base_grep = "CONTROL",
@@ -70,6 +79,14 @@ two_hr_volcano <- label_significant(two_hour_dds$results_table, log2FoldCut = 2.
   ggtitle("Volcano Plot 2 Hours - well 4 removed")
 
 print(two_hr_volcano)
+```
+
+### P value chart 2hr
+```{r}
+two_hour_dds$results_table %>% 
+  ggplot(mapping = aes(x = pvalue)) + 
+  geom_histogram()+
+  ggtitle("P Value Chart - time 2hr - total rna")
 ```
 
 ### DeSeq 6h
@@ -88,6 +105,15 @@ six_hr_volcano <- label_significant(six_hr_dds$results_table, log2FoldCut = 2.5,
 
 print(six_hr_volcano)
 ```
+
+### Make pvalue plot 6hr
+```{r pvalue 6hr}
+six_hr_dds$results_table %>% 
+  ggplot(mapping = aes(x = pvalue)) + 
+  geom_histogram()+
+  ggtitle("P Value Chart time 6hr total rna")
+```
+
 
 ## Gene Ontology Setup!
 

@@ -47,7 +47,7 @@ add_name_to_plot <-  function(res, gene_names = "Tardbp"){
     filter(symbol %in% gene_names) 
   
   named_plot <- first_plot + 
-    geom_text(data = with_name, aes(label = symbol))
+    geom_text(data = with_name, aes(label = gene_name))
   
   return(named_plot)
 }
@@ -65,7 +65,8 @@ label_significant <- function(res, log2FoldCut = 3, log10padj = 20){
   named_plot <- first_plot +
     geom_text_repel(data = with_name, aes(x = log2FoldChange,
                                           y= -log10(padj),
-                                          label = symbol),
+                                          label = gene_name),
+                    color = "black",
                     show_guide = FALSE)
   
   return(named_plot)
