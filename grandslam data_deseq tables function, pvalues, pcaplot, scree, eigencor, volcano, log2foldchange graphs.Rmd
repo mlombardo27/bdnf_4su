@@ -404,6 +404,110 @@ label_significant(one_vs_6_dds_bdnf$results_table, log2FoldCut =2, log10padj = 6
   ggpubr::theme_pubr()
 ```
 
+1vs6 hr venn diagrams for control vs bdnf upreg/downreg
+```{r 1vs6 venn diagram upreg/downreg}
+library("ggVennDiagram")
+
+upreg_genes_6hr_bdnf <- one_vs_6_dds_bdnf$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange > 0.1 & padj < 0.1)
+
+upreg_genes_6hr_control <- one_vs_6_dds_control$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange > 0.1 & padj < 0.1)
+
+upreg_gene_6hr_list <- list(A = upreg_genes_6hr_bdnf$gene_name,
+                            B = upreg_genes_2hr_control$gene_name)
+
+ggVennDiagram(upreg_gene_6hr_list, category.names = c("BDNF", "Control"))+
+  ggtitle("Upregulated Genes 6hr BDNF vs Control")
+
+downreg_genes_6hr_bdnf <-one_vs_6_dds_bdnf$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange < -0.1 & padj < 0.1)
+
+downreg_genes_6hr_control <- one_vs_6_dds_control$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange < -0.1 & padj < 0.1)
+
+downreg_gene_6hr_list <- list(A = downreg_genes_6hr_bdnf$gene_name,
+                            B = downreg_genes_6hr_control$gene_name)
+
+ggVennDiagram(downreg_gene_6hr_list, category.names = c("BDNF", "Control"))+
+  ggtitle("Downregulated Genes 6hr BDNF vs Control")
+```
+
+
+now going to 1vs 2 hour for controls and bdnf
+```{r 1vs2 hr controls and bdnf}
+source(here::here('run_standard_deseq.R'))
+
+feature_counts_fp <- file.path(here::here('data','feature_counts_bdnf_No4'))
+
+one_vs_2_dds_control <- run_standard_deseq(feature_counts_fp, 
+base_grep = "1hr",
+                              contrast_grep = "2hr", 
+                              grep_pattern = "CONTROL_.*.*_1|CONTROL_.*.*_2",
+                              baseName = "onehour",
+                              contrastName = '2hr')
+
+one_vs_2_dds_bdnf <- run_standard_deseq(feature_counts_fp, 
+base_grep = "1hr",
+                              contrast_grep = "2hr", 
+                              grep_pattern = "BDNF_.*.*_1|BDNF_.*.*_2",
+                              baseName = "onehour",
+                              contrastName = '2hr')
+                          
+#volcano plots
+source(here::here('make_volcano_plot.R'))
+
+label_significant(one_vs_2_dds_control$results_table, log2FoldCut = 1.5, log10padj = 4)+
+  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
+  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
+  ggtitle("Volcano 1 vs 2hr Control")+
+  ggpubr::theme_pubr()
+
+label_significant(one_vs_2_dds_bdnf$results_table, log2FoldCut =2, log10padj = 6)+
+  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
+  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
+  ggtitle("Volcano 1 vs 2hr BDNF")+
+  ggpubr::theme_pubr()
+```
+
+gonna make venn diagrams of BDNF 2 hours v Control 2 hours (total RNA) up regulated, downregulated
+
+```{r venn diagrams 2hr bdnf vs 2hr control}
+library("ggVennDiagram")
+
+upreg_genes_2hr_bdnf <- one_vs_2_dds_bdnf$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange > 0.1 & padj < 0.1)
+
+upreg_genes_2hr_control <- one_vs_2_dds_control$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange > 0.1 & padj < 0.1)
+
+upreg_gene_2hr_list <- list(A = upreg_genes_2hr_bdnf$gene_name,
+                            B = upreg_genes_2hr_control$gene_name)
+
+ggVennDiagram(upreg_gene_2hr_list, category.names = c("BDNF", "Control"))+
+  ggtitle("Upregulated Genes 2hr BDNF vs Control")
+
+downreg_genes_2hr_bdnf <-one_vs_2_dds_bdnf$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange < -0.1 & padj < 0.1)
+
+downreg_genes_2hr_control <- one_vs_2_dds_control$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange < -0.1 & padj < 0.1)
+
+downreg_gene_2hr_list <- list(A = downreg_genes_2hr_bdnf$gene_name,
+                            B = downreg_genes_2hr_control$gene_name)
+
+ggVennDiagram(downreg_gene_2hr_list, category.names = c("BDNF", "Control"))+
+  ggtitle("Downregulated Genes 2hr BDNF vs Control")
+```
+
 looking at effect of 4su on rna expression using GO analysis
 
 1vs6 control upregulated
