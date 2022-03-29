@@ -151,7 +151,7 @@ full_de_min2 <- full_de_min2 %>%
 my_color_palette = c("#4cbab3", "#ee6352", "#59cd90", "#fac05e", "#3fa7d6")
   
 full_de_min2 %>% 
-  mutate(plot_name = ifelse(log2FoldChange_total_rna > 3 & padj_total_rna < 0.05, gene_name_total_rna, NA)) %>% 
+  mutate(plot_name = ifelse(log2FoldChange_total_rna > 3 & padj_total_rna < 0.05, gene_name, NA)) %>% 
   ggplot(aes(x = log2FoldChange_total_rna,
              y = log2FoldChange_new_rna,
              fill = significant_log2fold_total, 
@@ -392,15 +392,19 @@ base_grep = "1hr",
 source(here::here('make_volcano_plot.R'))
 
 label_significant(one_vs_6_dds_control$results_table, log2FoldCut = 1.5, log10padj = 4)+
-  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
-  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
-  ggtitle("Volcano 1 vs 6hr Control")+
+  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"), name = NULL)+
+  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"), name = NULL, guide = FALSE)+
+  ggtitle("The effect of 4SU in Control Condition", subtitle ="log2FoldChange(6 hr / 1 hr) vs log10p-value(6 hr / 1hr)")+
+  ylab(expression(paste("-Lo", g[10], "P-value")))+
+  xlab(expression(paste("Lo", g[2], "Fold Change")))+
   ggpubr::theme_pubr()
 
 label_significant(one_vs_6_dds_bdnf$results_table, log2FoldCut =2, log10padj = 6)+
-  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
-  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
-  ggtitle("Volcano 1 vs 6hr BDNF")+
+  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"), name = NULL)+
+  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"), name = NULL, guide = FALSE)+
+  ggtitle("The effect of 4SU in BDNF Condition", subtitle ="log2FoldChange(6 hr / 1 hr) vs log10p-value(6 hr / 1hr)")+
+  ylab(expression(paste("-Lo", g[10], "P-value")))+
+  xlab(expression(paste("Lo", g[2], "Fold Change")))+
   ggpubr::theme_pubr()
 ```
 
@@ -644,23 +648,37 @@ new_rna_sig_bit <- new_ratio_bayesian %>%
 
 names(new_rna_sig_bit)[names(new_rna_sig_bit) == 'gene'] <- 'Geneid'
 
+new_rna_sig_bit<-new_rna_sig_bit %>% 
+  filter(!is.na(new_rna_sig))
+
+new_rna_sig_bit <- new_rna_sig_bit %>% 
+  mutate(new_rna_sig = case_when(
+    new_rna_sig == 'unclear' ~ "Unclear",
+    new_rna_sig == 'bdnf_equals_control' ~ "BDNF equals Control",
+    new_rna_sig == 'bdnf_higher_new_rna' ~ "BDNF higher new RNA",
+    new_rna_sig == 'bdnf_lower_new_rna' ~ "BDNF lower new RNA"
+  ))
+
+
 one_vs_6_dds_control$results_table %>% 
     full_join(one_vs_2_dds_bdnf$results_table, by = c("Geneid"),
               suffix = c("_4su_effect","_BDNF_2hr")) %>% 
   left_join(new_rna_sig_bit, by = c('Geneid')) %>% 
+  filter(!is.na(new_rna_sig)) %>% 
     ggplot(aes(x = log2FoldChange_BDNF_2hr,
-               y = log2FoldChange_4su_effect, fill = new_rna_sig, color = new_rna_sig)) + 
+               y = log2FoldChange_4su_effect, color = new_rna_sig)) + 
     geom_hline(yintercept = 0) +
     geom_vline(xintercept = 0) +
     geom_point(alpha = 0.4) + 
   facet_wrap(vars(new_rna_sig))+
-    ggpubr::theme_pubr() +
-    ggtitle("Effect on Total RNA with 4SU Treatment(ctrl 6 v 1 hr) vs BDNF 2hr",subtitle = 'all genes') + 
+  labs(color = 'New RNA')+
+  ggpubr::theme_pubr() +
+    ggtitle("Effect on Total RNA with 4SU Treatment (control 6 v 1 hr) vs BDNF 2hr",subtitle = 'All genes') + 
     ylab("Log2Fold Total RNA - 4SU Treatment") +
-    xlab("Log2Fold Total RNA- BDNF 2hr")
+    xlab("Log2Fold Total RNA - BDNF 2hr")
 ```
 
-going to add column: bdnf+4su log2foldchange - 4su log2fold change to see if bdnf addition amplifies some of the seen 4su response
+going to add column:4su log2fold change/bdnf+4su log2foldchange to see if bdnf addition amplifies some of the seen 4su response
 ```{r bdnf+4su log2foldchange - 4su log2fold change}
 
 one_vs_2_dds_bdnf_results <- one_vs_2_dds_bdnf$results_table %>% 

@@ -4,9 +4,9 @@ make_volcano_plot <- function(res, gene_names = "") {
   res <- res %>% 
     as.data.frame() %>% 
     mutate(graph_alpha = ifelse((padj < 0.1) | (is.na(padj)), 1,0.2)) %>%
-    mutate(graph_color = case_when(graph_alpha == 1 & log2FoldChange < 0 ~ "downregulated",
-                                   graph_alpha == 1 & log2FoldChange > 0 ~ "upregulated",
-                                   TRUE ~ "not significant")) 
+    mutate(graph_color = case_when(graph_alpha == 1 & log2FoldChange < 0 ~ "Downregulated",
+                                   graph_alpha == 1 & log2FoldChange > 0 ~ "Upregulated",
+                                   TRUE ~ "Not Significant")) 
   if(gene_names != ""){
     res <- res %>% mutate(plot_name = ifelse(gene_name %in% gene_names, gene_name,NA))
   }
