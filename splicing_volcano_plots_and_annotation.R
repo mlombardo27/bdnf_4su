@@ -154,9 +154,8 @@ splice_table = tibble(events = unique(c(df_sig_one$paste_into_igv_junction,
 # looking at 2hr first
 
 sig_splice_gene_names_2hr <- significant_changes_two %>% 
-  select(seqnames, gene_name, probability_changing, mean_dpsi_per_lsv_junction,junc_cat) %>% 
-  filter(probability_changing > 0.9 & mean_dpsi_per_lsv_junction >0.2) %>% 
-  pull(gene_name)
+  dplyr::select(seqnames, gene_name, probability_changing, mean_dpsi_per_lsv_junction,junc_cat) %>% 
+  filter(probability_changing > 0.9 & mean_dpsi_per_lsv_junction >0.2) 
 
 #no dynein, dynactin, kinesins genes
 
@@ -190,12 +189,23 @@ mf_go_2hr_splice %>%
   theme(legend.position = 'right')+
   ggtitle("Molecular Function GO for Genes with significant splicing changes at 2hr with BDNF")
 
-sig_splice_anno_categories <- GOfuncR::get_anno_categories(sig_splice_gene_names_2hr)
+sig_splice_anno_categories_2hr <- GOfuncR::get_anno_categories(sig_splice_gene_names_2hr$gene_name) %>% 
 
-names(sig_splice_anno_categories)[names(sig_splice_anno_categories) == 'gene'] <- 'gene_name'
+unique(sig_splice_anno_categories_2hr$gene)
+
+names(sig_splice_anno_categories_2hr)[names(sig_splice_anno_categories_2hr) == 'gene'] <- 'gene_name'
+
+significant_changes_two <- significant_changes_two %>% 
+  left_join(sig_splice_anno_categories_2hr, by = 'gene_name') %>% 
+  filter(probability_changing > 0.9 & mean_dpsi_per_lsv_junction >0.2) %>% 
+  dplyr::select(gene_name, mean_dpsi_per_lsv_junction, probability_changing, junc_cat, go_id, name) 
+
+gene_names_significant_changes_two <- unique(significant_changes_two$gene_name)
 
 significant_changes_two %>% 
-  filter(probability_changing > 0.9 & mean_dpsi_per_lsv_junction >0.2) %>% 
-  dplyr::select(gene_name, mean_dpsi_per_lsv_junction, probability_changing, junc_cat, go_id, name) %>% 
-  view()
+  filter(grepl('transport|export|signaling|RNA|transcription|splicing|p-body', name, ignore.case = TRUE)) %>%
+  pull(gene_name) %>% 
+  unique() %>% 
+  write.csv('splicing_genes_2hr.csv')
+
 

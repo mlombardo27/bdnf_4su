@@ -129,7 +129,7 @@ downreg_high_new_rna_2hr <- new_ratio_p_de %>%
   slice_min(mean_diff, n = 500) %>% 
   pull(gene) %>% 
   gsub("\\..*", "", .) %>% 
-  write_clip()
+  clipr::write_clip()
 
 cc_GO_2hr_downreg_high_new <- cp_GO_analysis(downreg_high_new_rna_2hr, bg_ids, typeGO = "cc")
 #no enriched terms
