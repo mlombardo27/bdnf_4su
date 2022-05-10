@@ -1,0 +1,67 @@
+---
+title: "isoform switcher"
+author: "Maddie Lombardo"
+date: "5/10/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(IsoformSwitchAnalyzeR)
+```
+
+I'm going to use the vignette work flow for this, step by step, explaining what each bit does
+
+setup: getting the data you need to do the rest
+```{r setup}
+salmon_data_1hr <- importIsoformExpression(parentDir = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/one_hour",addIsofomIdAsColumn = TRUE)
+
+conditions <- gsub('_[1-9][A-Z]_.*', '', colnames(salmon_data_1hr$abundance)[-1])
+conditions <- gsub('[1-9][A-Z]_','', conditions)
+
+myDesign_1hr <- data.frame(
+  sampleID = colnames(salmon_data_1hr$abundance)[-1],
+  condition = conditions)
+
+aSwitchList_1hr <- importRdata(
+  isoformCountMatrix = salmon_data_1hr$counts,
+  isoformRepExpression = salmon_data_1hr$abundance,
+  designMatrix = myDesign_1hr,
+  isoformExonAnnoation = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/gencode.v40.annotation.gtf.gz",
+  isoformNtFasta = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/gencode.v40.transcripts.fa",
+  showProgress = FALSE
+)
+```
+
+
+step 1) extract isoform switches and their sequences
+```{r step 1: extract isoform switches}
+
+switch_list_1hr <- isoformSwitchAnalysisPart1(
+  switchAnalyzeRlist = aSwitchList_1hr,
+  pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon",
+  outputSequences = TRUE,
+  prepareForWebServers = FALSE
+)
+
+```
+
+
+step 2) plot all isoform switches and their annotation
+```{r step 2: plot isoform switches}
+
+
+isoform_switch_1hr_step2 <- isoformSwitchAnalysisPart2(switchAnalyzeRlist = switch_list_1hr,
+                                                       codingCutoff = 0.725,
+                                                       n = 10,
+                                                       removeNoncodinORFs = TRUE)
+
+switch_list_1hr_filtered <- preFilter(switch_list_1hr) # preFilter to remove lowly expressed features
+
+switch_list_1hr_analyzed <- isoformSwitchTestDEXSeq(
+    switchAnalyzeRlist = switch_list_1hr_filtered,
+    reduceToSwitchingGenes=TRUE)
+
+```
+
