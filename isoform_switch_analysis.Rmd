@@ -13,6 +13,9 @@ library(IsoformSwitchAnalyzeR)
 
 I'm going to use the vignette work flow for this, step by step, explaining what each bit does
 
+1hr
+------------------------------------------------
+
 setup: getting the data you need to do the rest
 ```{r setup}
 salmon_data_1hr <- importIsoformExpression(parentDir = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/one_hour",addIsofomIdAsColumn = TRUE)
@@ -36,7 +39,7 @@ aSwitchList_1hr <- importRdata(
 
 
 step 1) extract isoform switches and their sequences
-```{r step 1: extract isoform switches}
+```{r step 1: extract isoform switches 1hr}
 
 switch_list_1hr <- isoformSwitchAnalysisPart1(
   switchAnalyzeRlist = aSwitchList_1hr,
@@ -47,21 +50,138 @@ switch_list_1hr <- isoformSwitchAnalysisPart1(
 
 ```
 
+pulling the top 10 isoform changes and making some volcano plots
+```{r top isoform switches and volcano plots 1hr}
 
-step 2) plot all isoform switches and their annotation
-```{r step 2: plot isoform switches}
+source(here::here('make_volcano_plot.R'))
+library(ggplot2)
 
-
-isoform_switch_1hr_step2 <- isoformSwitchAnalysisPart2(switchAnalyzeRlist = switch_list_1hr,
-                                                       codingCutoff = 0.725,
-                                                       n = 10,
-                                                       removeNoncodinORFs = TRUE)
-
-switch_list_1hr_filtered <- preFilter(switch_list_1hr) # preFilter to remove lowly expressed features
+switch_list_1hr_filtered <- preFilter(switch_list_1hr,
+                                      isoformExpressionCutoff = 1.2) # preFilter to remove lowly expressed features
 
 switch_list_1hr_analyzed <- isoformSwitchTestDEXSeq(
     switchAnalyzeRlist = switch_list_1hr_filtered,
     reduceToSwitchingGenes=TRUE)
 
+switch_list_info_1hr_analyze <- switch_list_1hr_analyzed$isoformSwitchAnalysis
+
+switch_list_info_1hr_analyze <- switch_list_info_1hr_analyze %>% 
+  mutate(isoform_id = gsub('\\..*',"", isoform_id)) %>% 
+  left_join(annotables::grch38_tx2gene, by = c(isoform_id = 'enstxp')) %>% 
+  left_join(annotables::grch38 %>%  dplyr::select(symbol, ensgene), by = 'ensgene')
+
+label_significant(switch_list_info_1hr_analyze, log2FoldCut = 0.2)
+```
+
+
+step 2) plot all isoform switches and their annotation
+```{r step 2: plot isoform switches, 1hr}
+
+switch_list_1hr_filtered <- preFilter(switch_list_1hr,
+                                      isoformExpressionCutoff = 1.2) # preFilter to remove lowly expressed features
+
+switch_list_1hr_analyzed <- isoformSwitchTestDEXSeq(
+    switchAnalyzeRlist = switch_list_1hr_filtered,
+    reduceToSwitchingGenes=TRUE)
+
+switch_list_1hr_pfam <- extractSequence(switch_list_1hr_analyzed,
+                                        pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon",
+                                        writeToFile = TRUE)
+
+
+isoform_switch_1hr_step2 <- isoformSwitchAnalysisPart2(switchAnalyzeRlist = switch_list_1hr_filtered,
+                                                       n = 10,
+                                                       removeNoncodinORFs = TRUE,
+                                                       pathToCPC2resultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/cpc2_isoform_switch.txt",
+                                                       pathToPFAMresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/pfam_analysis.txt",
+                                                       pathToSignalPresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/signalIP_1hr.txt",
+                                                       pathToIUPred2AresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/IUPred_1hr.result",
+                                                       outputPlots = TRUE,
+                                                       pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/one_hour",
+                                                       fileType = 'pdf')
+```
+
+2hrs
+---------------------------------------------------------
+```{r setup 2 hr}
+salmon_data_2hr <- importIsoformExpression(parentDir = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/two_hour",addIsofomIdAsColumn = TRUE)
+
+conditions <- gsub('_[1-9][A-Z]_.*', '', colnames(salmon_data_2hr$abundance)[-1])
+conditions <- gsub('[1-9][A-Z]_','', conditions)
+
+myDesign_2hr <- data.frame(
+  sampleID = colnames(salmon_data_2hr$abundance)[-1],
+  condition = conditions)
+
+aSwitchList_2hr <- importRdata(
+  isoformCountMatrix = salmon_data_2hr$counts,
+  isoformRepExpression = salmon_data_2hr$abundance,
+  designMatrix = myDesign_2hr,
+  isoformExonAnnoation = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/gencode.v40.annotation.gtf.gz",
+  isoformNtFasta = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/gencode.v40.transcripts.fa",
+  showProgress = FALSE
+)
+```
+
+
+step 1) extract isoform switches and their sequences
+```{r step 1 for 2hr}
+
+switch_list_2hr <- isoformSwitchAnalysisPart1(
+  switchAnalyzeRlist = aSwitchList_2hr,
+  pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon",
+  outputSequences = TRUE,
+  prepareForWebServers = FALSE
+)
+```
+
+volcano plots 2hrs
+```{r volcano 2hrs}
+source(here::here('make_volcano_plot.R'))
+library(ggplot2)
+
+switch_list_info_2hr_analyzed <- switch_list_2hr_analyzed$isoformSwitchAnalysis
+
+switch_list_info_2hr_analyzed <- switch_list_info_2hr_analyzed %>% 
+  mutate(isoform_id = gsub('\\..*',"", isoform_id)) %>% 
+  left_join(annotables::grch38_tx2gene, by = c(isoform_id = 'enstxp')) %>% 
+  left_join(annotables::grch38 %>%  dplyr::select(symbol, ensgene), by = 'ensgene')
+
+label_significant(switch_list_info_2hr_analyzed, log2FoldCut = 0.2, log10padj = 15)
+```
+
+
+```{r step 2: plot isoform switches, 1hr}
+
+switch_list_2hr_filtered <- preFilter(switch_list_2hr,
+                                      isoformExpressionCutoff = 1.85) # preFilter to remove lowly expressed features and to get under 500 for the pfam
+
+switch_list_2hr_analyzed <- isoformSwitchTestDEXSeq(
+    switchAnalyzeRlist = switch_list_2hr_filtered,
+    reduceToSwitchingGenes=TRUE)
+
+switch_list_2hr_pfam <- extractSequence(switch_list_2hr_analyzed,
+                                        pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon",
+                                        writeToFile = TRUE)
+
+
+isoform_switch_2hr_step2 <- isoformSwitchAnalysisPart2(switchAnalyzeRlist = switch_list_2hr_filtered,
+                                                       n = 10,
+                                                       removeNoncodinORFs = TRUE,
+                                                       pathToCPC2resultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/cpc2_2hr.txt",
+                                                       pathToPFAMresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/pfam_analysis.txt",
+                                                       pathToSignalPresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/signal_ip_2hr.txt",
+                                                       pathToIUPred2AresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/IUPred_1hr.result",
+                                                       outputPlots = TRUE,
+                                                       pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/two_hour",
+                                                       fileType = 'pdf')
+```
+
+```{r other plotting for hour 2}
+switchPlotIsoExp(switch_list_2hr_analyzed, gene = 'CDK14')
+switchPlotTranscript(switch_list_2hr_analyzed, gene = 'CDK14')
+
+switchPlotIsoExp(switch_list_2hr_analyzed, gene = 'PHB')
+switchPlotTranscript(switch_list_2hr_analyzed, gene = 'PHB')
 ```
 
