@@ -277,6 +277,17 @@ extractSplicingEnrichment(switchAnalyzeRlist = switch_list_2hr_part2,
                 plot = TRUE, returnResult = TRUE)
 ```
 
+```{r getting a list of genes that go coding > noncoding, 2hr}
+switch_list_consequence_2hr <- switch_list_2hr_part2$switchConsequence
+
+switch_list_consequence_2hr %>% 
+  filter(switchConsequence == 'Transcript is Noncoding') %>% 
+  pull(gene_name) %>% 
+  unique() %>% 
+  clipr::write_clip()
+```
+
+
 6hr
 ------------------------------------------------
 
@@ -404,3 +415,43 @@ extractConsequenceEnrichment(switchAnalyzeRlist = switch_list_6hr_part2,
 extractSplicingEnrichment(switchAnalyzeRlist = switch_list_6hr_part2, 
                 plot = TRUE)
 ```
+
+
+```{r looking at the isoform switch for the upregulated coding > noncoding genes at 2hr}
+
+isoform_switch_2hr <- readRDS('isoform_switch_2hr_data.rds')
+
+switchPlot(isoform_switch_2hr, 
+           gene = 'EPHB6')
+
+switchPlot(isoform_switch_2hr, gene = 'SV2B')
+
+switchPlot(isoform_switch_2hr, gene = 'DNMT1')
+
+switchPlot(isoform_switch_2hr, gene = 'PTPRE')
+
+switchPlot(isoform_switch_2hr, gene = 'MGAT4C')
+
+switchPlot(isoform_switch_2hr, gene = 'LPP')
+
+switchPlot(isoform_switch_2hr, gene = 'TSPAN9')
+
+switchPlot(isoform_switch_2hr, gene = 'SLC25A17')
+
+switchPlot(isoform_switch_2hr, gene = 'RAB31')
+
+switchPlot(isoform_switch_2hr, gene = 'TSPAN18')
+
+```
+
+```{r}
+switch_consequence_2hr <- isoform_switch_2hr$switchConsequence
+
+orf_loss <- switch_consequence_2hr %>% 
+  filter(switchConsequence == "Complete ORF loss") %>% 
+  pull(gene_name) %>% 
+  unique() %>% 
+  clipr::write_clip()
+
+```
+

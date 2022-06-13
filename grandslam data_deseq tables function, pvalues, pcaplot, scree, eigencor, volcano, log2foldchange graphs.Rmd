@@ -204,6 +204,52 @@ counts_by_hr %>%
   theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
 ```
 
+## 10/6/21 NEW GRAPH OF coding > noncoding genes using above code (but changed a bit)
+```{r new categorization of coding >noncoding genes}
+coding_to_non_fp<-file.path('coding_to_noncoding_genes_2hr.csv')
+coding_to_noncoding_genes <- read_csv(coding_to_non_fp)
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% coding_to_noncoding_genes$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch from coding to noncoding at 2 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
+
+## 13/6/21 NEW GRAPH OF orf > non-orf switch
+
+```{r new categorization of orf > non orf genes}
+orf_loss_fp <- file.path('data','orf_loss_2hr.csv')
+orf_loss_genes <- read_csv(orf_loss_fp)
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% orf_loss_genes$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to Complete ORF loss at 2 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
+
+
 pca plots
 
 first by time
