@@ -421,6 +421,8 @@ extractSplicingEnrichment(switchAnalyzeRlist = switch_list_6hr_part2,
 
 isoform_switch_2hr <- readRDS('isoform_switch_2hr_data.rds')
 
+#from upregulated total rna for categorization chart
+
 switchPlot(isoform_switch_2hr, 
            gene = 'EPHB6')
 
@@ -444,7 +446,7 @@ switchPlot(isoform_switch_2hr, gene = 'TSPAN18')
 
 ```
 
-```{r}
+```{r examples of isoform switch resulting in orf_loss with upregulated total rna}
 switch_consequence_2hr <- isoform_switch_2hr$switchConsequence
 
 orf_loss <- switch_consequence_2hr %>% 
@@ -453,5 +455,30 @@ orf_loss <- switch_consequence_2hr %>%
   unique() %>% 
   clipr::write_clip()
 
+#from upregulated total rna from the categorization chart
+
+switchPlot(isoform_switch_2hr, gene = 'RAP1GAP')
+
+switchPlot(isoform_switch_2hr, gene = 'LPP')
+
+switchPlot(isoform_switch_2hr, gene = 'EPHB6')
+
+switchPlot(isoform_switch_2hr, gene = 'EBF2')
+
+switchPlot(isoform_switch_2hr, gene = 'PTPRE')
+
+switchPlot(isoform_switch_2hr, gene = 'TSPAN9')
+
+switchPlot(isoform_switch_2hr, gene = 'MGAT4C')
+
+switchPlot(isoform_switch_2hr, gene = 'SV2B')
+
+switchPlot(isoform_switch_2hr, gene = 'SLC25A17')
+
+switchPlot(isoform_switch_2hr, gene = 'TSPAN18')
+
+switchPlot(isoform_switch_2hr, gene = 'RAB31')
 ```
+
+
 

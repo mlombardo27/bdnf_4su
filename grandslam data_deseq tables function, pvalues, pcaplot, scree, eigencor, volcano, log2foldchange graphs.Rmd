@@ -247,6 +247,13 @@ full_de_min2 %>%
          x = "Total RNA Categorization",
          fill = "New RNA Categorization")+
   theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+
+
+full_de_min2 %>% 
+  filter(gene_name %in% orf_loss_genes$x) %>% 
+  filter(total_rna_sig == 'upregulated') %>% 
+  pull(gene_name) %>% 
+  clipr::write_clip()
 ```
 
 

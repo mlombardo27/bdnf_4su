@@ -120,7 +120,7 @@ new_ratio_bayesian_p_de %>%
   geom_hline(yintercept = 0,size = 1)+
   geom_path(aes(x = time, y = log2FoldChange, group = gene_name))+
   geom_point(size = 3,pch = 21)+
-  ggtitle('Change in the New Fraction of RNA for early response BDNF genes') +
+  ggtitle('Change in the Total RNA Levels for early response BDNF genes') +
   scale_fill_manual(values = c("darkolivegreen2", "coral")) +
   facet_wrap(~gene_name, scales = "free_y")+
   labs(x = "Treatment Time")+
