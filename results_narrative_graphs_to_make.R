@@ -16,6 +16,7 @@ smaller_new_ratio_bayesian_p_de <- new_ratio_bayesian_p_de %>%
 go_genes_i_want <- smaller_new_ratio_bayesian_p_de %>% 
   filter(gene_name %in% go_genes_2hr_not_sig_total_higher_new) %>% 
   filter(time == 2) %>% 
+  filter(!(gene_name == 'RNU4-1')) %>% 
   slice_min(mean_diff, n = 16) %>% 
   pull(gene_name)
 
@@ -76,7 +77,7 @@ test3 <-estimate_list_full %>%
   ungroup()  %>% 
   mutate(max_y = max_y - 0.005)
 
-test3 %>% 
+test %>% 
   ggplot(aes(x = as.factor(time), y = map, fill = condition))+
   geom_boxplot() +
   geom_point(size = 1.5,pch = 21,position = position_dodge(width = 0.9)) +
@@ -92,10 +93,26 @@ test3 %>%
   scale_fill_manual(values = c('#FF42FF','#0096FF')) +
   scale_color_manual(values = c('#FF42FF','#0096FF')) +
   facet_wrap(~symbol,scales = 'free_y') +
+  #scale_x_continuous(labels = 0:6)+
   geom_text(
     inherit.aes = FALSE, (aes(x = as.character(time), y = max_y,label = sig_label)),
     size = 7)+
-  ggtitle('Change in the New Fraction of RNA \nBDNF vs Control 2hr \n downregulated total with higher fraction new RNA with BDNF')
+  ggtitle('Change in the New Fraction of RNA \nBDNF vs Control 2hr \nno significant change in total with higher fraction new RNA with BDNF')
+
+new_ratio_bayesian_p_de %>% 
+  filter(gene_name %in% go_genes_i_want) %>% 
+  mutate(sig_change = !(padj > 0.1 | is.na(padj))) %>% 
+  ggplot(aes(x = time, y= log2FoldChange, fill = sig_change)) +
+  geom_hline(yintercept = 0,size = 1)+
+  geom_path(aes(x = time, y = log2FoldChange, group = gene_name))+
+  geom_point(size = 3,pch = 21)+
+  ggtitle('Change in the Total RNA abundance \nBDNF vs Control 2hr \nno significant change in total with higher fraction new RNA with BDNF') +
+  scale_fill_manual(values = c("plum3","turquoise2")) +
+  facet_wrap(~gene_name, scales = "free_y")+
+  scale_x_continuous(labels = 0:6, breaks = 0:6)+
+  labs(x = "Treatment Time")+
+  ggpubr::theme_pubr()+
+  theme(legend.position = 'none')
 
 new_ratio_bayesian_p_de %>% 
   filter(gene_name %in% go_genes_i_want2) %>% 
@@ -104,9 +121,25 @@ new_ratio_bayesian_p_de %>%
   geom_hline(yintercept = 0,size = 1)+
   geom_path(aes(x = time, y = log2FoldChange, group = gene_name))+
   geom_point(size = 3,pch = 21)+
+  ggtitle('Change in the Total RNA abundance \nBDNF vs Control 2hr \ndownregulated total with higher fraction new RNA with BDNF') +
+  scale_fill_manual(values = c("plum3","turquoise2")) +
+  facet_wrap(~gene_name, scales = "free_y")+
+  scale_x_continuous(labels = 0:6, breaks = 0:6)+
+  labs(x = "Treatment Time")+
+  ggpubr::theme_pubr()+
+  theme(legend.position = 'none')
+
+new_ratio_bayesian_p_de %>% 
+  filter(gene_name %in% chx_test_genes) %>% 
+  mutate(sig_change = !(padj > 0.1 | is.na(padj))) %>% 
+  ggplot(aes(x = time, y= log2FoldChange, fill = sig_change)) +
+  geom_hline(yintercept = 0,size = 1)+
+  geom_path(aes(x = time, y = log2FoldChange, group = gene_name))+
+  geom_point(size = 3,pch = 21)+
   ggtitle('Change in the Total RNA abundance \nBDNF vs Control 2hr') +
   scale_fill_manual(values = c("plum3","turquoise2")) +
   facet_wrap(~gene_name, scales = "free_y")+
+  scale_x_continuous(labels = 0:6, breaks = 0:6)+
   labs(x = "Treatment Time")+
   ggpubr::theme_pubr()+
   theme(legend.position = 'none')

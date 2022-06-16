@@ -287,6 +287,16 @@ switch_list_consequence_2hr %>%
   clipr::write_clip()
 ```
 
+```{r getting genes that intron retention gain 2hr}
+switch_list_consequence_2hr <-isoform_switch_2hr$switchConsequence
+
+switch_list_consequence_2hr %>% 
+  filter(switchConsequence == 'Intron retention gain') %>% 
+  pull(gene_name) %>% 
+  unique() %>% 
+  clipr::write_clip()
+```
+
 
 6hr
 ------------------------------------------------
@@ -446,7 +456,7 @@ switchPlot(isoform_switch_2hr, gene = 'TSPAN18')
 
 ```
 
-```{r examples of isoform switch resulting in orf_loss with upregulated total rna}
+```{r examples of isoform switch resulting in orf_loss}
 switch_consequence_2hr <- isoform_switch_2hr$switchConsequence
 
 orf_loss <- switch_consequence_2hr %>% 
@@ -478,7 +488,31 @@ switchPlot(isoform_switch_2hr, gene = 'SLC25A17')
 switchPlot(isoform_switch_2hr, gene = 'TSPAN18')
 
 switchPlot(isoform_switch_2hr, gene = 'RAB31')
+
+#from not significant total rna with high fraction new from cat chart
+
+switchPlot(isoform_switch_2hr, gene = 'PIK3R4')
+
+switchPlot(isoform_switch_2hr, gene = 'ZNF136')
+
+switchPlot(isoform_switch_2hr, gene = 'E2F4') #**
+
+switchPlot(isoform_switch_2hr, gene = 'RASSF5')
+
+switchPlot(isoform_switch_2hr, gene = 'TTF1')
+
+switchPlot(isoform_switch_2hr, gene = 'ZNF121')
+
+switchPlot(isoform_switch_2hr, gene = 'URB2')
+
+switchPlot(isoform_switch_2hr, gene = 'MTERF4')
+
+switchPlot(isoform_switch_2hr, gene = 'KIF26B')
+
+switchPlot(isoform_switch_2hr, gene = 'MED12L')
 ```
+
+^top 10 genes (based on mean_diff) from the not significant total with higher fraction new that result in ORF loss
 
 
 

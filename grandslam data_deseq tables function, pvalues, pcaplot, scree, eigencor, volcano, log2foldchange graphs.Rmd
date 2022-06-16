@@ -251,9 +251,43 @@ full_de_min2 %>%
 
 full_de_min2 %>% 
   filter(gene_name %in% orf_loss_genes$x) %>% 
-  filter(total_rna_sig == 'upregulated') %>% 
+  filter(total_rna_sig == 'not_significant' & new_rna_sig == 'bdnf_higher_new_rna') %>% 
+  slice_min(mean_diff,n = 10) %>% 
   pull(gene_name) %>% 
   clipr::write_clip()
+```
+
+## 15/6/21 NEW graph of INTRON RETENTION GAIN
+
+```{r categorization of intron retention gain genes}
+intron_retention_fp <- file.path('data', 'intron_retained_genes.csv')
+intron_retained_genes <- read_csv(intron_retention_fp)
+
+full_de_min2 <- readRDS('full_de_min2.rds')
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% intron_retained_genes$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to Intron retention gain at 2 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+
+full_de_min2 %>% 
+  filter(gene_name %in% intron_retained_genes$x) %>% 
+  filter(total_rna_sig == 'upregulated') %>% 
+  pull(gene_name) %>% 
+  unique() %>% 
+  clipr::write_clip()
+
 ```
 
 
