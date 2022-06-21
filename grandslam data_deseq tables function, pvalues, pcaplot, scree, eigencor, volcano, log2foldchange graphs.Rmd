@@ -290,6 +290,9 @@ full_de_min2 %>%
 
 ```
 
+#NEW GRAPH 20/6/22 shorter last exon gene categorization
+
+
 
 pca plots
 

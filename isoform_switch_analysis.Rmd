@@ -43,6 +43,7 @@ aSwitchList_1hr <- importRdata(
 
 step 1) extract isoform switches and their sequences
 ```{r step 1: extract isoform switches 1hr}
+aSwitchList_1hr <- readRDS('aSwitchList_1hr.rds')
 
 switch_list_1hr <- isoformSwitchAnalysisPart1(
   switchAnalyzeRlist = aSwitchList_1hr,
@@ -79,6 +80,7 @@ label_significant(switch_list_info_1hr_analyze, log2FoldCut = 0.2)
 
 step 2) plot all isoform switches and their annotation
 ```{r step 2: plot isoform switches, 1hr}
+
 
 switch_list_1hr_filtered <- preFilter(switch_list_1hr,
                                       isoformExpressionCutoff = 1.2) # preFilter to remove lowly expressed features
@@ -118,27 +120,30 @@ switch_list_1hr_part2 <- analyzeSignalP(switchAnalyzeRlist = switch_list_1hr_par
 switch_list_1hr_part2 <- analyzeAlternativeSplicing(switchAnalyzeRlist = switch_list_1hr_part2,
                                                  onlySwitchingGenes = TRUE)
 switch_list_1hr_part2 <- analyzeSwitchConsequences(switchAnalyzeRlist = switch_list_1hr_part2,
-                                                 consequencesToAnalyze = c(
-        'intron_retention',
-        'coding_potential',
-        'ORF_seq_similarity',
-        'NMD_status',
-        'domains_identified',
-        'IDR_identified',
-        'IDR_type',
-        'signal_peptide_identified'
-    ))
+                                                 consequencesToAnalyze = c('last_exon', "5_utr_length", "3_utr_length","5_utr_seq_similarity", "3_utr_seq_similarity"))
 switchPlotTopSwitches(switchAnalyzeRlist = switch_list_1hr_part2, 
             n = 50, filterForConsequences = TRUE, 
             splitFunctionalConsequences = TRUE,
             pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/splicing plots", 
             fileType = "pdf")
-consequence_summary_1hr <- extractConsequenceSummary(switchAnalyzeRlist = switch_list_1hr_part2, 
+extractConsequenceSummary(switchAnalyzeRlist = switch_list_1hr_part2, 
                 plot = TRUE, plotGenes = TRUE, localTheme = ggpubr::theme_pubclean())
 extractConsequenceEnrichment(switchAnalyzeRlist = switch_list_1hr_part2, 
                 plot = TRUE)
 extractSplicingEnrichment(switchAnalyzeRlist = switch_list_1hr_part2, 
                 plot = TRUE)
+```
+
+5utr 3utr isoform switch genes for categorization
+
+```{r getting genes for shorter last exon 1hr}
+switch_list_consequence_1hr <- switch_list_1hr_part2$switchConsequence
+
+switch_list_consequence_1hr %>% 
+  filter(switchConsequence == 'Last exon more upstream' | switchConsequence == 'Last exon more downstream') %>% 
+  pull(gene_name) %>% 
+  unique() %>% 
+  clipr::write_clip()
 ```
 
 
@@ -254,16 +259,8 @@ switch_list_2hr_part2 <- analyzeSignalP(switchAnalyzeRlist = switch_list_2hr_par
 switch_list_2hr_part2 <- analyzeAlternativeSplicing(switchAnalyzeRlist = switch_list_2hr_part2,
                                                  onlySwitchingGenes = TRUE)
 switch_list_2hr_part2 <- analyzeSwitchConsequences(switchAnalyzeRlist = switch_list_2hr_part2,
-                                                 consequencesToAnalyze = c(
-        'intron_retention',
-        'coding_potential',
-        'ORF_seq_similarity',
-        'NMD_status',
-        'domains_identified',
-        'IDR_identified',
-        'IDR_type',
-        'signal_peptide_identified'
-    ))
+                                                 consequencesToAnalyze = c('last_exon', "5_utr_length", "3_utr_length","5_utr_seq_similarity", "3_utr_seq_similarity"))
+
 switchPlotTopSwitches(switchAnalyzeRlist = switch_list_2hr_part2, 
             n = 50, filterForConsequences = TRUE, 
             splitFunctionalConsequences = TRUE,
@@ -276,6 +273,15 @@ extractConsequenceEnrichment(switchAnalyzeRlist = switch_list_2hr_part2,
 extractSplicingEnrichment(switchAnalyzeRlist = switch_list_2hr_part2, 
                 plot = TRUE, returnResult = TRUE)
 ```
+
+```{r looping for the switchplots for shorter 3'utr genes}
+pdf('shorter_3utr_genes_isoform_switch_2hr') 
+for(g in upstream_last_exon_genes_2hr){
+  switchPlot(switch_list_2hr_part2, gene = g)
+}
+  dev.off()
+```
+
 
 ```{r getting a list of genes that go coding > noncoding, 2hr}
 switch_list_consequence_2hr <- switch_list_2hr_part2$switchConsequence
@@ -403,16 +409,8 @@ switch_list_6hr_part2 <- analyzeSignalP(switchAnalyzeRlist = switch_list_6hr_par
 switch_list_6hr_part2 <- analyzeAlternativeSplicing(switchAnalyzeRlist = switch_list_6hr_part2,
                                                  onlySwitchingGenes = TRUE)
 switch_list_6hr_part2 <- analyzeSwitchConsequences(switchAnalyzeRlist = switch_list_6hr_part2,
-                                                 consequencesToAnalyze = c(
-        'intron_retention',
-        'coding_potential',
-        'ORF_seq_similarity',
-        'NMD_status',
-        'domains_identified',
-        'IDR_identified',
-        'IDR_type',
-        'signal_peptide_identified'
-    ))
+                                                 consequencesToAnalyze = c('last_exon', "5_utr_length", "3_utr_length","5_utr_seq_similarity", "3_utr_seq_similarity"))
+
 switchPlotTopSwitches(switchAnalyzeRlist = switch_list_6hr_part2, 
             n = 50, filterForConsequences = TRUE, 
             splitFunctionalConsequences = TRUE,
