@@ -290,9 +290,66 @@ full_de_min2 %>%
 
 ```
 
-#NEW GRAPH 20/6/22 shorter last exon gene categorization
+#NEW GRAPH 22/6/22 shorter last exon and longer last exon gene categorization, 6hr
+```{r shorter/longer last exon, 6hr}
+shorter_longer_last_exon_6hr <- readxl::read_excel('6hr_shorter_longer_last_exon_genes.xlsx')
 
+palette<- c("#A6CEE3", "#1F78B4","#B2DF8A", "#33A02C")
 
+full_de_min2 %>% 
+  filter(gene_name %in% shorter_longer_last_exon_6hr$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to shorter or longer last exon at 6 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
+
+```{r just longer last exon, 6hr}
+longer_last_exon_6hr <- readxl::read_excel('longer_last_exon_genes_6hr.xlsx')
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% longer_last_exon_6hr$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to longer last exon at 6 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
+
+```{r just shorter last exon,6hr}
+shorter_last_exon_6hr <- readxl::read_excel('shorter_last_exon_genes_6hr.xlsx')
+
+palette<- c("#A6CEE3", "#1F78B4","#B2DF8A", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% shorter_last_exon_6hr$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to shorter last exon at 6 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
 
 pca plots
 
