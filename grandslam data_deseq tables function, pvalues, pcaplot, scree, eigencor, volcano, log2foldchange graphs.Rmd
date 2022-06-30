@@ -351,6 +351,48 @@ full_de_min2 %>%
   theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
 ```
 
+shorter or longer last exon genes for 1 and 2hrs now 
+
+```{r}
+shorter_longer_last_exon_1hr <- readxl::read_excel('shorter_longer_last_exon_genes_1hr.xlsx')
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% shorter_longer_last_exon_1hr$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to shorter or longer last exon at 1 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+
+shorter_longer_last_exon_2hr <- readxl::read_excel('shorter_longer_last__exon_genes_2hr.xlsx')
+
+palette<- c("#A6CEE3", "#1F78B4","#B2DF8A", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% shorter_longer_last_exon_2hr$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to shorter or longer last exon at 2 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
+
+
+
 pca plots
 
 first by time

@@ -303,6 +303,16 @@ switch_list_consequence_2hr %>%
   clipr::write_clip()
 ```
 
+```{r}
+switch_list_consequence_2hr <-switch_list_2hr_part2$switchConsequence
+
+switch_list_consequence_2hr %>% 
+  filter(switchConsequence == 'Last exon more upstream'| switchConsequence=='Last exon more downstream') %>% 
+  pull(gene_name) %>% 
+  unique() %>% 
+  clipr::write_clip()
+```
+
 
 6hr
 ------------------------------------------------
@@ -422,6 +432,14 @@ extractConsequenceEnrichment(switchAnalyzeRlist = switch_list_6hr_part2,
                 plot = TRUE)
 extractSplicingEnrichment(switchAnalyzeRlist = switch_list_6hr_part2, 
                 plot = TRUE)
+```
+
+```{r looping the last exon changes for 6hr into a pdf}
+pdf('shorter_longer_last_exon_switch_plots_6hr.pdf') 
+for(g in shorter_longer_last_exon_genes_6hr$x){
+  switchPlot(switch_list_6hr_part2, gene = g)
+}
+  dev.off()
 ```
 
 
