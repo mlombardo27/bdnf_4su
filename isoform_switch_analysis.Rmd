@@ -275,7 +275,7 @@ extractSplicingEnrichment(switchAnalyzeRlist = switch_list_2hr_part2,
 ```
 
 ```{r looping for the switchplots for shorter 3'utr genes}
-pdf('shorter_3utr_genes_isoform_switch_2hr') 
+pdf('shorter_3utr_genes_isoform_switch_2hr.pdf') 
 for(g in upstream_last_exon_genes_2hr){
   switchPlot(switch_list_2hr_part2, gene = g)
 }
@@ -303,7 +303,8 @@ switch_list_consequence_2hr %>%
   clipr::write_clip()
 ```
 
-```{r}
+```{r orf loss }
+switch_list_2hr_part2 <- readRDS('isoform_switch_2hr_data.rds')
 switch_list_consequence_2hr <-switch_list_2hr_part2$switchConsequence
 
 switch_list_consequence_2hr %>% 
@@ -311,6 +312,47 @@ switch_list_consequence_2hr %>%
   pull(gene_name) %>% 
   unique() %>% 
   clipr::write_clip()
+
+shorter_longer_last_exon_genes_2hr <- readxl::read_xlsx('shorter_longer_last__exon_genes_2hr.xlsx')
+
+switch_list_2hr_part2 <- readRDS('isoform_switch_2hr_5utr_3utr.rds')
+
+switch_list_2hr_consequence <- switch_list_2hr_part2$switchConsequence 
+  
+switch_list_2hr_consequence %>% 
+  filter(switchConsequence == 'Last exon more upstream' | switchConsequence == 'Last exon more downstream')
+
+switchPlot(switch_list_2hr_part2, gene = 'MAP3K13')
+switchPlot(switch_list_2hr_part2, gene = 'METTL15')
+switchPlot(switch_list_2hr_part2, gene = 'PIK3R4')
+```
+
+example of intron retention 2hr
+
+```{r ex switchplot intron retention 2hr}
+switch_list_2hr_part2 <- readRDS('isoform_switch_2hr_data.rds')
+switch_list_2hr_consequence <- switch_list_2hr_part2$switchConsequence
+
+switch_list_2hr_consequence %>% 
+  filter(switchConsequence == 'Intron retention gain') %>% 
+  pull(gene_name) %>% 
+  unique()
+
+switchPlot(switch_list_2hr_part2, gene = 'CASTOR1')
+```
+
+example of coding to noncoding 2hr
+
+```{r ex coding to noncoding switchplot 2hr}
+switch_list_2hr_part2 <- readRDS('isoform_switch_2hr_data.rds')
+switch_list_2hr_consequence <- switch_list_2hr_part2$switchConsequence
+
+switch_list_2hr_consequence %>% 
+  filter(switchConsequence == 'Transcript is Noncoding') %>% 
+  pull(gene_name) %>% 
+  unique()
+
+switchPlot(switch_list_2hr_part2, gene = 'PRKN')
 ```
 
 

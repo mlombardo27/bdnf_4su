@@ -353,7 +353,7 @@ full_de_min2 %>%
 
 shorter or longer last exon genes for 1 and 2hrs now 
 
-```{r}
+```{r shorter/longer last exon 1,2 hrs}
 shorter_longer_last_exon_1hr <- readxl::read_excel('shorter_longer_last_exon_genes_1hr.xlsx')
 
 palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
