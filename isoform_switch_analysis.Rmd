@@ -355,6 +355,69 @@ switch_list_2hr_consequence %>%
 switchPlot(switch_list_2hr_part2, gene = 'PRKN')
 ```
 
+loop for shorter 3'utr
+
+```{r}
+longer_3utr_genes <- readxl::read_xlsx('longer_3utr_genes.xlsx')
+
+pdf('longer_3utr_isoform_switch_2hr.pdf') 
+for(g in longer_3utr_genes$x){
+  switchPlot(switch_list_2hr_part2, gene = g)
+}
+  dev.off()
+```
+
+2hrs running all possible switch consequences
+```{r 2hr all possible switch consequences}
+a_switch_list_2hr <- readRDS('aSwitchList_2hr.rds')
+
+switch_list_2hr <- isoformSwitchAnalysisPart1(
+  switchAnalyzeRlist = a_switch_list_2hr,
+  pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon",
+  outputSequences = TRUE,
+  prepareForWebServers = FALSE
+)
+
+switch_list_2hr_filtered <- preFilter(switch_list_2hr,
+                                      isoformExpressionCutoff = 1.85) # preFilter to remove lowly expressed features and to get under 500 for the pfam
+
+switch_list_2hr_analyzed <- isoformSwitchTestDEXSeq(
+    switchAnalyzeRlist = switch_list_2hr_filtered,
+    reduceToSwitchingGenes=TRUE)
+
+switch_list_2hr_fasta <- extractSequence(switch_list_2hr_analyzed,
+                                        pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon",
+                                        writeToFile = TRUE)
+
+switch_list_2hr_part2 <- analyzeCPC2(switchAnalyzeRlist = switch_list_2hr,
+                                  pathToCPC2resultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/cpc2_2hr.txt",
+                                  codingCutoff = 0.5,
+                                  removeNoncodinORFs = TRUE)
+switch_list_2hr_part2 <- analyzePFAM(switchAnalyzeRlist = switch_list_2hr_part2,
+                                  pathToPFAMresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/pfam_2hr.txt")
+switch_list_2hr_part2 <- analyzeIUPred2A(switchAnalyzeRlist = switch_list_2hr_part2,
+                                      pathToIUPred2AresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/iupred_2hr.result")
+switch_list_2hr_part2 <- analyzeSignalP(switchAnalyzeRlist = switch_list_2hr_part2,
+                                     pathToSignalPresultFile = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/Full BDNF 4SU - salmon/Full BDNF 4SU - salmon/signal_ip_2hr.txt")
+switch_list_2hr_part2 <- analyzeAlternativeSplicing(switchAnalyzeRlist = switch_list_2hr_part2,
+                                                 onlySwitchingGenes = TRUE)
+switch_list_2hr_part2 <- analyzeSwitchConsequences(switchAnalyzeRlist = switch_list_2hr_part2,
+                                                 consequencesToAnalyze = c("tss","tts","last_exon","isoform_length","intron_structure","intron_retention","isoform_class_code","coding_potential","ORF_genomic","ORF_length","5_utr_length","3_utr_length","isoform_seq_similarity","ORF_seq_similarity","5_utr_seq_similarity","3_utr_seq_similarity","NMD_status","domains_identified","genomic_domain_position","domain_length","signal_peptide_identified","IDR_identified","IDR_length","IDR_type"))
+
+switchPlotTopSwitches(switchAnalyzeRlist = switch_list_2hr_part2, 
+            n = 50, filterForConsequences = TRUE, 
+            splitFunctionalConsequences = TRUE,
+            pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/splicing plots", 
+            fileType = "pdf")
+extractConsequenceSummary(switchAnalyzeRlist = switch_list_2hr_part2,
+                          consequencesToAnalyze = c("tss","tts","last_exon","isoform_length","intron_retention","coding_potential","ORF_genomic","5_utr_length","3_utr_length","NMD_status","domains_identified","genomic_domain_position","domain_length","signal_peptide_identified","IDR_identified","IDR_length","IDR_type"),
+                          removeEmptyConsequence= TRUE,
+                plot = TRUE, returnResult = FALSE)
+extractConsequenceEnrichment(switchAnalyzeRlist = switch_list_2hr_part2, consequencesToAnalyze = c("tss","tts","last_exon","isoform_length","intron_retention","coding_potential","ORF_genomic","5_utr_length","3_utr_length","NMD_status","domains_identified","genomic_domain_position","domain_length","signal_peptide_identified","IDR_identified","IDR_length","IDR_type"),
+                plot = TRUE, returnResult = FALSE)
+extractSplicingEnrichment(switchAnalyzeRlist = switch_list_2hr_part2, 
+                plot = TRUE, returnResult = TRUE)
+```
 
 6hr
 ------------------------------------------------
@@ -487,6 +550,7 @@ for(g in shorter_longer_last_exon_genes_6hr$x){
 
 ```{r looking at the isoform switch for the upregulated coding > noncoding genes at 2hr}
 
+
 isoform_switch_2hr <- readRDS('isoform_switch_2hr_data.rds')
 
 #from upregulated total rna for categorization chart
@@ -573,4 +637,44 @@ switchPlot(isoform_switch_2hr, gene = 'MED12L')
 ^top 10 genes (based on mean_diff) from the not significant total with higher fraction new that result in ORF loss
 
 
+#getting a 3way venn of the genes with ORF loss, coding>noncoding switch, and last exon more upstream for 2hr bdnf vs control
+```{r venn diagram of overlap between isoform switches}
+
+my_isoform_switch <- readRDS('isoform_switch_all_consequences_2hr.rds')
+
+switch_consequence <- my_isoform_switch$switchConsequence
+
+orf_loss <- switch_consequence %>% 
+  filter(switchConsequence == 'Complete ORF loss') %>% 
+  pull(gene_name) %>% 
+  unique()
+
+noncoding <- switch_consequence %>% 
+  filter(switchConsequence == 'Transcript is Noncoding') %>% 
+  pull(gene_name) %>% 
+  unique()
+
+upstream_last_exon <- switch_consequence %>% 
+  filter(switchConsequence == 'Last exon more upstream') %>% 
+  pull(gene_name) %>% 
+  unique()
+
+library(eulerr)
+
+my_list <- list(orf_loss = orf_loss,
+                noncoding = noncoding,
+                upstream_last_exon = upstream_last_exon)
+
+my_venn <- plot(euler(my_list), quantities = TRUE)
+
+#getting the 94 genes that just have more upstream_last_exon and no orf_loss or noncoding
+
+only_upstream_last_exon <- switch_consequence %>% 
+  filter(switchConsequence == 'Last exon more upstream') %>% 
+  filter(!(gene_name %in% orf_loss)) %>% 
+  filter(!(gene_name %in% noncoding))%>% 
+  pull(gene_name) %>% 
+  unique() %>% 
+  clipr::write_clip()
+```
 

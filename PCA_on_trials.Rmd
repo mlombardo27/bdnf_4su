@@ -23,10 +23,6 @@ The chunk above is code. But this is just a normal text document.
 
 Let's load in the file:
 
-I'm using a function called fread from the data.table package to read in the data. 
-I do this cause it reads data faster, it's not relevant for a smaller table like
-this one is, but can be handy once we get around to larger datasets. 
-
 ```{r}
 bdnf_file_path <- file.path(here::here(),"data","bdnf_full_counts.csv")
 

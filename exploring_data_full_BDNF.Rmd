@@ -1,5 +1,5 @@
 ---
-title: "Differential_expression_full_BDNF"
+title: "exploring data full BDNF"
 author: "Maddie Lombardo"
 date: "1/11/2022"
 output: html_document
@@ -37,7 +37,7 @@ counts_object <- create_feature_count_table(featureCounts_file_path)
 
 #remove the gene name column, turn it into a rowname
 counts_object <- counts_object %>% 
-    select(-gene_name) %>% 
+    dplyr::select(-gene_name) %>% 
     column_to_rownames('Geneid') 
 
 meta_df <- metadata %>% 
@@ -50,12 +50,13 @@ counts_object <- counts_object[match(rownames(meta_df),colnames(counts_object))]
 library(PCAtools)
 p <- PCAtools::pca(counts_object , metadata = meta_df, removeVar = 0.1)
 
-screeplot <- screeplot(p, axisLabSize = 18, titleLabSize = 22)
+screeplot(p, axisLabSize = 18, titleLabSize = 22)
 
 biplot(p,
        x = "PC1",
        y = "PC2",
-       colby = 'cond')
+       colby = 'cond',
+       colkey = c("#0096FF","#FF42FF"))
 ```
 
 now I'm going to get and arrange the different pca gene loadings
@@ -152,6 +153,7 @@ biplot(normalized_p,
        x = "PC1",
        y = "PC3",
        colby = 'cond', 
+       colkey = c("#0096FF","#FF42FF"),
        title = "Biplot comparing Condition and Labelling Time - Well 4 Removed")
 ```
 

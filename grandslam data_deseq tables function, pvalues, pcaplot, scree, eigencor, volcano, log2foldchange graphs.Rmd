@@ -39,7 +39,7 @@ create_table_1 <- function(filtered_grandslam_rna,
     
   filtered_df <- filtered_grandslam_rna %>% 
       filter(time == timepoint) %>% 
-      select(gene, min2, SampleID) %>% 
+      dplyr::select(gene, min2, SampleID) %>% 
       mutate(min2 = round(min2)) %>% 
       pivot_wider(names_from = SampleID, values_from = min2, values_fill = 0) 
     
@@ -188,19 +188,35 @@ full_de_min2 <- full_de_min2 %>%
                                     TRUE ~"not_significant"))
 
 counts_by_hr <- full_de_min2 %>% 
-    group_by(time, new_rna_is_sig, total_rna_sig_total_rna) %>% 
+    group_by(time, new_rna_is_sig, total_rna_sig) %>% 
     summarize(count = n())
 
-counts_by_hr %>% 
-    ggplot(aes(x = new_rna_is_sig, y = count, fill = total_rna_sig_total_rna))+
+full_de_min2 %>% 
+  group_by(time, new_rna_sig,total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+    ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
     scale_fill_brewer(palette = "Paired")+
     geom_col() +
     facet_wrap(vars(time),scales = 'free_x')+
     coord_flip()+
-    ggtitle("Categorizing New vs total RNA -\n Differential Expression on Labeled RNA") +
+    ggtitle("Categorizing New vs total RNA") +
     labs(y = "Number of Genes per Timepoint", 
-         x = "New RNA Categorization",
-         fill = "Total RNA Categorization")+
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+
+#standard w/o color
+full_de_min2 %>% 
+  group_by(time, new_rna_sig,total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+    ggplot(aes(x = total_rna_sig, y = count))+
+    scale_fill_brewer(palette = "Paired")+
+    geom_col() +
+    facet_wrap(vars(time),scales = 'free_x')+
+    coord_flip()+
+    ggtitle("Standard differential gene expression") +
+    labs(y = "Number of Genes per Timepoint", 
+         x = "Total RNA Categorization")+
   theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
 ```
 
