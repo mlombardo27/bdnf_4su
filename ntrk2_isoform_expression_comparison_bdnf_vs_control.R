@@ -125,6 +125,77 @@ ntrk2 %>%
   ggtitle('Number of reads (in TPM) for each of the NTRK2 isoforms at 6 hours')+
   geom_point(pch = 21,position = position_jitterdodge(jitter.width = 0.3),size = 2) 
 
+# plotting ntrk2 isoforms from g38
+library(magrittr)
+library(ggtranscript)
 
-         
-         
+g38 <- readRDS('gencode.v38.gtf.RDS')
+
+ntrk2_from_g38 <- g38 %>% 
+  filter(gene_name == 'NTRK2') %>% 
+  select(seqnames, start, end, strand, type, gene_name, gene_id, transcript_id, transcript_name, transcript_type, exon_number)
+
+ntrk2_i_care_about <- ntrk2_from_g38 %>% 
+  mutate(transcript_id = gsub('\\..*',"", transcript_id)) %>% 
+  filter(transcript_id == c('ENST00000277120','ENST00000323115','ENST00000376213'))
+
+ntrk2_cds <- ntrk2_i_care_about %>% 
+  filter(type == 'CDS')
+
+ntrk2_exons <- ntrk2_i_care_about %>% 
+  filter(type == 'exon')
+
+ntrk2_exons_prot_coding <- ntrk2_exons %>% 
+  filter(transcript_type == 'protein_coding')
+
+types_i_want <- ntrk2_i_care_about %>% filter(!(type =='transcript')) %>% pull(type) %>% unique()
+
+ntrk2_i_care_about %>% 
+  ggplot(aes(xstart = start,
+             xend = end,
+             y = transcript_id))+
+  geom_range(aes(fill = type))+
+  geom_range(data = ntrk2_cds)+
+  geom_intron(data = to_intron(ntrk2_i_care_about, 'transcript_name'),
+              aes(strand = strand),
+              arrow.min.intron.length = 500)+
+  coord_cartesian(xlim = c(84670000, 84780000))
+
+ntrk2_120 <- ntrk2_i_care_about %>% filter(transcript_id == 'ENST00000277120')
+ntrk2_115<- ntrk2_i_care_about %>% filter(transcript_id == 'ENST00000323115')
+
+ntrk2_115 %>% 
+  ggplot(aes(xstart = start,
+             xend = end,
+             y = 'NTRK2-115/120',
+             fill = type))+
+  geom_half_range(aes(fill = type))+
+  geom_intron(data = to_intron(ntrk2_115, 'transcript_name'),
+              arrow.min.intron.length = 500)+
+  geom_half_range(data = ntrk2_120, 
+                  range.orientation = 'top')+
+  geom_intron(data = to_intron(ntrk2_120, 'transcript_name'),
+              arrow.min.intron.length = 500)+
+  coord_cartesian(xlim = c(84670000, 84720000))
+
+ntrk2_rescaled <- shorten_gaps(exons = ntrk2_exons,
+                              introns = to_intron(ntrk2_exons, 'transcript_name'),
+                              group_var = 'transcript_name')
+
+ntrk2_rescaled_exons <- ntrk2_rescaled %>% filter(type == 'exon')
+ntrk2_rescaled_introns <- ntrk2_rescaled %>% filter(type == 'intron')
+
+ntrk2_rescaled_exons_prot_cod <- ntrk2_rescaled_exons %>% 
+  filter(transcript_type =='protein_coding')
+
+ntrk2_rescaled_exons_prot_cod %>% 
+  ggplot(aes(
+    xstart = start,
+    xend = end,
+    y = transcript_name)) +
+  geom_range(aes(height = 0.25))+
+  geom_intron(
+    data = ntrk2_rescaled_introns,
+    aes(strand = strand), 
+    arrow.min.intron.length = 300)
+
