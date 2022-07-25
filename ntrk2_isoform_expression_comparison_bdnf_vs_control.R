@@ -1,3 +1,5 @@
+library(tidyverse)
+
 # im taking the salmon data and looking at the expression levels of ntrk2 for each timepoint
 #below creates boxplots comparing isoform expression of ntrk2 for bdnf vs control at 1,2,6hrs
 
@@ -137,7 +139,7 @@ ntrk2_from_g38 <- g38 %>%
 
 ntrk2_i_care_about <- ntrk2_from_g38 %>% 
   mutate(transcript_id = gsub('\\..*',"", transcript_id)) %>% 
-  filter(transcript_id == c('ENST00000277120','ENST00000323115','ENST00000376213'))
+  filter(transcript_id == c('ENST00000277120','ENST00000323115','ENST00000376213','ENST00000359847', 'ENST00000304053'))
 
 ntrk2_cds <- ntrk2_i_care_about %>% 
   filter(type == 'CDS')
@@ -158,8 +160,7 @@ ntrk2_i_care_about %>%
   geom_range(data = ntrk2_cds)+
   geom_intron(data = to_intron(ntrk2_i_care_about, 'transcript_name'),
               aes(strand = strand),
-              arrow.min.intron.length = 500)+
-  coord_cartesian(xlim = c(84670000, 84780000))
+              arrow.min.intron.length = 500)
 
 ntrk2_120 <- ntrk2_i_care_about %>% filter(transcript_id == 'ENST00000277120')
 ntrk2_115<- ntrk2_i_care_about %>% filter(transcript_id == 'ENST00000323115')
@@ -199,3 +200,151 @@ ntrk2_rescaled_exons_prot_cod %>%
     aes(strand = strand), 
     arrow.min.intron.length = 300)
 
+# going to look at the junctions for ntrk2 isoforms 213, 115, 120 that are getting changed the most with BDNF
+
+splicing_junctions_2hr <- read_csv("C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/bdnf-4su_splicing/bdnf-4su_splicing/control2-bdnf2_annotated_junctions.csv")
+
+#for transcript 115
+ntrk2_115_exons <- ntrk2_exons %>% 
+  filter(transcript_id == 'ENST00000323115')
+ntrk2_115_cds <- ntrk2_cds %>% 
+  filter(transcript_id == 'ENST00000323115')
+
+ntrk2_junctions <- splicing_junctions_2hr %>% 
+  filter(gene_name == 'NTRK2') %>% 
+  mutate(transcript_id = 'ENST00000323115')
+
+ntrk2_115_exons %>% 
+  ggplot(aes(xstart = start,
+             xend= end,
+             y = transcript_id))+
+  geom_range(data = ntrk2_115_cds, aes(fill = type))+
+  geom_range(fill = 'white',
+             height = 0.25)+
+  geom_range(data = ntrk2_115_cds)+
+  geom_intron(data = to_intron(ntrk2_115_exons, 'transcript_name'))+
+  geom_junction(data = ntrk2_junctions,
+                aes(size = bdnf2_mean_psi),
+                junction.y.max = 0.5)+
+  geom_junction_label_repel(data = ntrk2_junctions,
+                            aes(label = round(bdnf2_mean_psi, 2)),
+                            junction.y.max = 0.5)+
+  scale_size_continuous(range = c(0.1,1))+
+  coord_cartesian(xlim = c(84667500, 84712000))
+
+#for transcript 120-- most expressed transcript
+
+ntrk2_120_exons <- ntrk2_exons %>% 
+  filter(transcript_id == 'ENST00000277120')
+ntrk2_120_cds <- ntrk2_cds %>% 
+  filter(transcript_id == 'ENST00000277120')
+
+ntrk2_junctions <- splicing_junctions_2hr %>% 
+  filter(gene_name == 'NTRK2') %>% 
+  mutate(transcript_id = 'ENST00000277120')
+
+ntrk2_120_exons %>% 
+  ggplot(aes(xstart = start,
+             xend= end,
+             y = transcript_id))+
+  geom_range(data = ntrk2_120_cds, aes(fill = type))+
+  geom_range(fill = 'white',
+             height = 0.25)+
+  geom_range(data = ntrk2_120_cds)+
+  geom_intron(data = to_intron(ntrk2_120_exons, 'transcript_name'))+
+  geom_junction(data = ntrk2_junctions,
+                aes(size = bdnf2_mean_psi),
+                junction.y.max = 0.5)+
+  geom_junction_label_repel(data = ntrk2_junctions,
+                            aes(label = round(bdnf2_mean_psi, 2)),
+                            junction.y.max = 0.5)+
+  scale_size_continuous(range = c(0.1,1))+
+  coord_cartesian(xlim = c(84667500, 84675000))
+
+# 213--changes with control vs bdnf
+
+ntrk2_213_exons <- ntrk2_exons %>% 
+  filter(transcript_id == 'ENST00000376213')
+ntrk2_213_cds <- ntrk2_cds %>% 
+  filter(transcript_id == 'ENST00000376213')
+
+ntrk2_junctions <- splicing_junctions_2hr %>% 
+  filter(gene_name == 'NTRK2') %>% 
+  mutate(transcript_id = 'ENST00000376213')
+
+ntrk2_213_exons %>% 
+  ggplot(aes(xstart = start,
+             xend= end,
+             y = transcript_id))+
+  geom_range(data = ntrk2_213_cds, aes(fill = type))+
+  geom_range(fill = 'white',
+             height = 0.25)+
+  geom_range(data = ntrk2_213_cds)+
+  geom_intron(data = to_intron(ntrk2_213_exons, 'transcript_name'))+
+  geom_junction(data = ntrk2_junctions,
+                aes(size = bdnf2_mean_psi),
+                junction.y.max = 0.5)+
+  geom_junction_label_repel(data = ntrk2_junctions,
+                            aes(label = round(bdnf2_mean_psi, 2)),
+                            junction.y.max = 0.5)+
+  scale_size_continuous(range = c(0.1,1))+
+  coord_cartesian(xlim = c(84668000, 84705000))
+
+#doing some extra ones 
+# 847- changes with BDNF(signficant)
+
+ntrk2_847_exons <- ntrk2_exons %>% 
+  filter(transcript_id == 'ENST00000359847')
+ntrk2_847_cds <- ntrk2_cds %>% 
+  filter(transcript_id == 'ENST00000359847')
+
+ntrk2_junctions <- splicing_junctions_2hr %>% 
+  filter(gene_name == 'NTRK2') %>% 
+  mutate(transcript_id = 'ENST00000359847')
+
+ntrk2_847_exons %>% 
+  ggplot(aes(xstart = start,
+             xend= end,
+             y = transcript_id))+
+  geom_range(data = ntrk2_847_cds, aes(fill = type))+
+  geom_range(fill = 'white',
+             height = 0.25)+
+  geom_range(data = ntrk2_847_cds)+
+  geom_intron(data = to_intron(ntrk2_847_exons, 'transcript_name'))+
+  geom_junction(data = ntrk2_junctions,
+                aes(size = bdnf2_mean_psi),
+                junction.y.max = 0.5)+
+  geom_junction_label_repel(data = ntrk2_junctions,
+                            aes(label = round(bdnf2_mean_psi, 2)),
+                            junction.y.max = 0.5)+
+  scale_size_continuous(range = c(0.1,1))+
+  coord_cartesian(xlim = c(84668000, 84705000))
+
+# 053--changes with bdnf (non-significant)
+
+ntrk2_053_exons <- ntrk2_exons %>% 
+  filter(transcript_id == 'ENST00000304053')
+ntrk2_053_cds <- ntrk2_cds %>% 
+  filter(transcript_id == 'ENST00000304053')
+
+ntrk2_junctions <- splicing_junctions_2hr %>% 
+  filter(gene_name == 'NTRK2') %>% 
+  mutate(transcript_id = 'ENST00000304053')
+
+ntrk2_053_exons %>% 
+  ggplot(aes(xstart = start,
+             xend= end,
+             y = transcript_id))+
+  geom_range(data = ntrk2_053_cds, aes(fill = type))+
+  geom_range(fill = 'white',
+             height = 0.25)+
+  geom_range(data = ntrk2_053_cds)+
+  geom_intron(data = to_intron(ntrk2_053_exons, 'transcript_name'))+
+  geom_junction(data = ntrk2_junctions,
+                aes(size = bdnf2_mean_psi),
+                junction.y.max = 0.5)+
+  geom_junction_label_repel(data = ntrk2_junctions,
+                            aes(label = round(bdnf2_mean_psi, 2)),
+                            junction.y.max = 0.5)+
+  scale_size_continuous(range = c(0.1,1))+
+  coord_cartesian(xlim = c(84668000, 84705000))
