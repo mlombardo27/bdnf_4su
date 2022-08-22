@@ -1,3 +1,6 @@
+#splicing volcanos
+#code from AL
+
 library(tidyverse)
 library(data.table)
 library(ggrepel)
@@ -49,7 +52,7 @@ three_one = my_peak_annotated_one %>%
     pull(annot_symbol)
 # two hours ---------------------------------------------------------------
 csv_file_two = read_csv("C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/data/bdnf-4su_splicing/bdnf-4su_splicing/control2-bdnf2_annotated_junctions.csv")
-two_vp = splicing_dots_tables_function(csv_file_two,list_gene = c("NTRK2","CNOT4","AKT1",'RO60'))
+two_vp = splicing_dots_tables_function(csv_file_two,list_gene = c("NTRK2","CNOT4", 'CAMK1', 'SORBS2', 'ABLIM2','PTPN3'))
 two_vp + ggtitle("Splicing at 2 hours BDNF")
 
 significant_changes_two = csv_file_two %>% 

@@ -3,22 +3,22 @@
 make_volcano_plot <- function(res, gene_names = "") {
   res <- res %>% 
     as.data.frame() %>% 
-    mutate(graph_alpha = ifelse((padj < 0.1) | (is.na(padj)), 1,0.2)) %>%
-    mutate(graph_color = case_when(graph_alpha == 1 & log2FoldChange < 0 ~ "Downregulated",
-                                   graph_alpha == 1 & log2FoldChange > 0 ~ "Upregulated",
+    mutate(graph_alpha = ifelse((padj_total_rna < 0.1) | (is.na(padj_total_rna)), 1,0.2)) %>%
+    mutate(graph_color = case_when(graph_alpha == 1 & log2FoldChange_total_rna < 0 ~ "Downregulated",
+                                   graph_alpha == 1 & log2FoldChange_total_rna > 0 ~ "Upregulated",
                                    TRUE ~ "Not Significant")) 
   if(gene_names != ""){
-    res <- res %>% mutate(plot_name = ifelse(gene_name %in% gene_names, gene_name,NA))
+    res <- res %>% mutate(plot_name = ifelse(gene_names %in% symbol, symbol,NA))
   }
   
-  my_plot <- ggplot(res, aes(x = log2FoldChange,
-                             y= -log10(padj),
+  my_plot <- ggplot(res, aes(x = log2FoldChange_total_rna,
+                             y= -log10(padj_total_rna),
                              fill = graph_color, 
                              color = graph_color,)) +
     geom_point(aes(alpha = graph_alpha), pch = 21) +
     ggpubr::theme_pubr() +
     ylab(expression(paste("-Lo", g[10], "P-value"))) +
-    xlab(expression(paste("Lo", g[2], "Fold Change"))) +
+    xlab(expression(paste("Lo", g[2], 'FoldChange'))) +
     theme(text = element_text(size = 24)) +
     theme(legend.text = element_text(size = 22)) +
     geom_hline(yintercept = -log10(0.1)) +
@@ -59,13 +59,13 @@ label_significant <- function(res, log2FoldCut = 3, log10padj = 20){
   
   with_name <-first_plot$data %>% 
     as.data.frame() %>% 
-    filter(-log10(padj) > log10padj) %>% 
-    filter(abs(log2FoldChange) > log2FoldCut)
+    filter(-log10(padj_total_rna) > log10padj) %>% 
+    filter(abs(log2FoldChange_total_rna) > log2FoldCut)
   
   named_plot <- first_plot +
-    geom_text_repel(data = with_name, aes(x = log2FoldChange,
-                                          y= -log10(padj),
-                                          label = gene_name),
+    ggrepel::geom_text_repel(data = with_name, aes(x = log2FoldChange_total_rna,
+                                          y= -log10(padj_total_rna),
+                                          label = symbol),
                     color = "black",
                     show_guide = FALSE)
   

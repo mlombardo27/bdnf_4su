@@ -1,0 +1,349 @@
+---
+title: "4su_effect_1vs6_1vs2"
+author: "Maddie Lombardo"
+date: "2022-08-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+going to look at controls 1 vs 6hr and bdnf 1 vs 6hr
+trying to normalize for the 4su effect 
+```{r de controls 1vs6hr and bdnf 1vs6hr}
+source(here::here('run_standard_deseq.R'))
+
+feature_counts_fp <- file.path(here::here('data','feature_counts_bdnf_No4'))
+
+one_vs_6_dds_control <- run_standard_deseq(feature_counts_fp, 
+base_grep = "1hr",
+                              contrast_grep = "6hr", 
+                              grep_pattern = "CONTROL_.*.*_1|CONTROL_.*.*_6",
+                              baseName = "onehour",
+                              contrastName = '6hr')
+
+one_vs_6_dds_bdnf <- run_standard_deseq(feature_counts_fp, 
+base_grep = "1hr",
+                              contrast_grep = "6hr", 
+                              grep_pattern = "BDNF_.*.*_1|BDNF_.*.*_6",
+                              baseName = "onehour",
+                              contrastName = '6hr')
+                          
+#volcano plots
+source(here::here('make_volcano_plot.R'))
+
+label_significant(one_vs_6_dds_control$results_table, log2FoldCut = 1.5, log10padj = 4)+
+  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"), name = NULL)+
+  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"), name = NULL, guide = FALSE)+
+  ggtitle("The effect of 4SU in Control Condition", subtitle ="log2FoldChange(6 hr / 1 hr) vs log10p-value(6 hr / 1hr)")+
+  ylab(expression(paste("-Lo", g[10], "P-value")))+
+  xlab(expression(paste("Lo", g[2], "Fold Change")))+
+  ggpubr::theme_pubr()
+
+label_significant(one_vs_6_dds_bdnf$results_table, log2FoldCut =2, log10padj = 6)+
+  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"), name = NULL)+
+  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"), name = NULL, guide = FALSE)+
+  ggtitle("The effect of 4SU in BDNF Condition", subtitle ="log2FoldChange(6 hr / 1 hr) vs log10p-value(6 hr / 1hr)")+
+  ylab(expression(paste("-Lo", g[10], "P-value")))+
+  xlab(expression(paste("Lo", g[2], "Fold Change")))+
+  ggpubr::theme_pubr()
+```
+
+1vs6 hr venn diagrams for control vs bdnf upreg/downreg
+```{r 1vs6 venn diagram upreg/downreg}
+library("ggVennDiagram")
+
+upreg_genes_6hr_bdnf <- one_vs_6_dds_bdnf$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange > 0.1 & padj < 0.1)
+
+upreg_genes_6hr_control <- one_vs_6_dds_control$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange > 0.1 & padj < 0.1)
+
+upreg_gene_6hr_list <- list(A = upreg_genes_6hr_bdnf$gene_name,
+                            B = upreg_genes_2hr_control$gene_name)
+
+ggVennDiagram(upreg_gene_6hr_list, category.names = c("BDNF", "Control"))+
+  ggtitle("Upregulated Genes 6hr BDNF vs Control")
+
+downreg_genes_6hr_bdnf <-one_vs_6_dds_bdnf$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange < -0.1 & padj < 0.1)
+
+downreg_genes_6hr_control <- one_vs_6_dds_control$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange < -0.1 & padj < 0.1)
+
+downreg_gene_6hr_list <- list(A = downreg_genes_6hr_bdnf$gene_name,
+                            B = downreg_genes_6hr_control$gene_name)
+
+ggVennDiagram(downreg_gene_6hr_list, category.names = c("BDNF", "Control"))+
+  ggtitle("Downregulated Genes 6hr BDNF vs Control")
+```
+
+now going to 1vs 2 hour for controls and bdnf
+```{r 1vs2 hr controls and bdnf}
+source(here::here('run_standard_deseq.R'))
+
+feature_counts_fp <- file.path(here::here('data','feature_counts_bdnf_No4'))
+
+one_vs_2_dds_control <- run_standard_deseq(feature_counts_fp, 
+base_grep = "1hr",
+                              contrast_grep = "2hr", 
+                              grep_pattern = "CONTROL_.*.*_1|CONTROL_.*.*_2",
+                              baseName = "onehour",
+                              contrastName = '2hr')
+
+one_vs_2_dds_bdnf <- run_standard_deseq(feature_counts_fp, 
+base_grep = "1hr",
+                              contrast_grep = "2hr", 
+                              grep_pattern = "BDNF_.*.*_1|BDNF_.*.*_2",
+                              baseName = "onehour",
+                              contrastName = '2hr')
+                          
+#volcano plots
+source(here::here('make_volcano_plot.R'))
+
+label_significant(one_vs_2_dds_control$results_table, log2FoldCut = 1.5, log10padj = 4)+
+  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
+  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
+  ggtitle("Volcano 1 vs 2hr Control")+
+  ggpubr::theme_pubr()
+
+label_significant(one_vs_2_dds_bdnf$results_table, log2FoldCut =2, log10padj = 6)+
+  scale_fill_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
+  scale_color_manual(values = c("#3fa7d6", "#ee6352", "#fac05e"))+
+  ggtitle("Volcano 1 vs 2hr BDNF")+
+  ggpubr::theme_pubr()
+```
+
+gonna make venn diagrams of BDNF 2 hours v Control 2 hours (total RNA) up regulated, downregulated
+
+```{r venn diagrams 2hr bdnf vs 2hr control}
+library("ggVennDiagram")
+
+upreg_genes_2hr_bdnf <- one_vs_2_dds_bdnf$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange > 0 & padj < 0.1)
+
+upreg_genes_2hr_control <- one_vs_2_dds_control$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange > 0.1 & padj < 0.1)
+
+upreg_gene_2hr_list <- list(A = upreg_genes_2hr_bdnf$gene_name,
+                            B = upreg_genes_2hr_control$gene_name)
+
+ggVennDiagram(upreg_gene_2hr_list, category.names = c("BDNF", "Control"))+
+  ggtitle("Upregulated Genes 2hr BDNF vs Control")
+
+downreg_genes_2hr_bdnf <-one_vs_2_dds_bdnf$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange < -0.1 & padj < 0.1)
+
+downreg_genes_2hr_control <- one_vs_2_dds_control$results_table %>% 
+  select(log2FoldChange,padj,gene_name) %>% 
+  filter(log2FoldChange < -0.1 & padj < 0.1)
+
+downreg_gene_2hr_list <- list(A = downreg_genes_2hr_bdnf$gene_name,
+                            B = downreg_genes_2hr_control$gene_name)
+
+ggVennDiagram(downreg_gene_2hr_list, category.names = c("BDNF", "Control"))+
+  ggtitle("Downregulated Genes 2hr BDNF vs Control")
+```
+
+looking at effect of 4su on rna expression using GO analysis
+
+1vs6 control upregulated
+```{r go on 1vs6 hr control: upregulated}
+bg_ids <- one_vs_6_dds_control$results_table$Geneid %>% 
+  gsub("\\..*", "", .) %>% 
+  unique() %>% 
+  clipr::write_clip()
+
+upreg_1vs6_control <- one_vs_6_dds_control$results_table %>% 
+  filter(log2FoldChange > 0.5 & padj < 0.1) %>% 
+  pull(Geneid) %>% 
+  gsub("\\..*", "", .) %>% 
+  clipr::write_clip()
+
+#graphing the string data
+bp_go_1vs6_upreg_fp <- file.path("data", "bp go 1vs6 control upreg.tsv")
+bp_go_1vs6_upreg <- janitor::clean_names(read_tsv(bp_go_1vs6_upreg_fp))
+
+bp_go_1vs6_upreg %>% slice_max(strength, n = 10) %>% 
+  mutate(term_description = fct_reorder(term_description,strength)) %>% 
+  ggplot(aes(y = strength, fill = false_discovery_rate, x = term_description,size = observed_gene_count))+
+  geom_point(pch = 21) +
+  scale_fill_gradient(low = 'blue', high = 'red')+
+  coord_flip()+ 
+  theme_pubr()+
+  theme(legend.position = 'right')+
+  ggtitle("biological process GO on 1vs6_upreg genes")
+
+cc_go_1vs6_upreg_fp <- file.path("data", "cc go 1vs6 control upreg.tsv")
+cc_go_1vs6_upreg <- janitor::clean_names(read_tsv(cc_go_1vs6_upreg_fp))
+
+cc_go_1vs6_upreg %>% slice_max(strength, n = 10) %>% mutate(term_description = fct_reorder(term_description,strength)) %>%  ggplot(aes(y = strength, fill = false_discovery_rate, x = term_description,size = observed_gene_count)) + geom_point(pch = 21) + scale_fill_gradient(low = 'blue', high = 'red')+coord_flip()+ theme_pubr()+theme(legend.position = 'right')+
+  ggtitle("Cellular Compartment GO on 1vs6_upreg genes")
+
+mf_go_1vs6_upreg_fp <- file.path("data", "mf go 1vs6 control upreg.tsv")
+mf_go_1vs6_upreg <- janitor::clean_names(read_tsv(mf_go_1vs6_upreg_fp))
+
+mf_go_1vs6_upreg %>% slice_max(strength, n = 10) %>% mutate(term_description = fct_reorder(term_description,strength)) %>%  ggplot(aes(y = strength, fill = false_discovery_rate, x = term_description,size = observed_gene_count)) + geom_point(pch = 21) +scale_fill_gradient(low = 'blue', high = 'red')+ coord_flip()+ theme_pubr()+ theme(legend.position = 'right')+ggtitle("Molecular function GO on 1vs6_upreg genes")
+```
+
+1vs6 control downregulated
+```{r go on 1vs6 hr control: downregulated}
+downreg_1vs6_control <- one_vs_6_dds_control$results_table %>% 
+  filter(log2FoldChange < -0.5 & padj < 0.1) %>% 
+  pull(Geneid) %>% 
+  gsub("\\..*", "", .) %>% 
+  clipr::write_clip()
+
+cc_go_1vs6_downreg_fp <- file.path("data", "cc go 1vs6 control downreg.tsv")
+cc_go_1vs6_downreg <- janitor::clean_names(read_tsv(cc_go_1vs6_downreg_fp))
+
+cc_go_1vs6_downreg %>% slice_max(strength, n = 10) %>% mutate(term_description = fct_reorder(term_description,strength)) %>%  ggplot(aes(y = strength, fill = false_discovery_rate, x = term_description,size = observed_gene_count)) + geom_point(pch = 21) + scale_fill_gradient(low = 'blue', high = 'red')+ coord_flip()+ theme_pubr()+ theme(legend.position = 'right')+
+  ggtitle("Cellular Compartment GO on 1vs6 downreg genes")
+```
+
+```{r looking at dynein related genes}
+dyn_cc_1vs6_upreg <- cc_go_1vs6_upreg %>% filter(grepl('dyn', term_description,ignore.case = TRUE)) %>% pull(matching_proteins_in_your_network_labels) %>% 
+  str_split(.,',')
+
+dyn_mf_1vs6_upreg <- mf_go_1vs6_upreg %>% filter(grepl('dyn',term_description,ignore.case = TRUE)) %>% 
+  pull(matching_proteins_in_your_network_labels) %>% 
+  str_split(.,',') 
+
+dyn_1vs6_control <- unique(dyn_cc_1vs6_upreg, dyn_mf_1vs6_upreg[[1]] )[[1]]
+
+normalized_counts <- one_vs_6_dds_control$deseq_obj %>% 
+  counts(., normalized=TRUE) %>% 
+  as.data.frame() %>% 
+  rownames_to_column('ensgene') %>% 
+  mutate(ensgene = gsub("\\..*", "",ensgene)) %>% 
+  left_join(annotables::grch38 %>% select(ensgene,symbol)) %>% 
+  filter(symbol %in% dyn_1vs6_control)
+
+normalized_counts <- normalized_counts %>% 
+  melt(id.vars = c('ensgene','symbol'))
+
+normalized_counts <- normalized_counts %>% 
+  mutate(condition = case_when(grepl('_1hr', variable, ignore.case = TRUE) ~ '1',
+    grepl('_2hr', variable, ignore.case = TRUE) ~ '2',
+    grepl('_6hr', variable, ignore.case = TRUE) ~ '6'))
+   
+ggplot(normalized_counts, mapping = aes(condition, value))+
+  geom_boxplot()+
+  geom_point()+
+  geom_text_repel(mapping = aes(label = variable), size = 2.5)+
+  facet_wrap(vars(symbol), scales = 'free_y')+
+  ggpubr::theme_pubr()+
+  labs(x = "Timepoint 1hr vs 6hr", y ="Normalized Counts" )
+```
+
+```{r scattterplot log2foldchange total rna}
+up_4su_control_6hr <- one_vs_6_dds_control$results_table %>% filter(padj < 0.1 & log2FoldChange > 0)
+
+test = list(up_4su_control_6hr = up_4su_control_6hr$gene_name,upreg_genes_2hr_bdnf = upreg_genes_2hr_bdnf$gene_name)
+ggVennDiagram(test, category.names = c("Upregulated by 4SU (6 v 1hr Controls)","Upregulated by BDNF 2hr")) + ggtitle("Effect of 4SU treatment on total gene expression") +
+    scale_color_manual(values = c("black","black"))
+
+new_ratio_bayesian_fp <- file.path(here::here('data', 'new_ratio_bayesian_p_de.csv'))
+new_ratio_bayesian <- read_csv(new_ratio_bayesian_fp)
+
+new_rna_sig_bit <- new_ratio_bayesian %>% 
+  select(gene, new_rna_sig)
+
+names(new_rna_sig_bit)[names(new_rna_sig_bit) == 'gene'] <- 'Geneid'
+
+new_rna_sig_bit<-new_rna_sig_bit %>% 
+  filter(!is.na(new_rna_sig))
+
+new_rna_sig_bit <- new_rna_sig_bit %>% 
+  mutate(new_rna_sig = case_when(
+    new_rna_sig == 'unclear' ~ "Unclear",
+    new_rna_sig == 'bdnf_equals_control' ~ "BDNF equals Control",
+    new_rna_sig == 'bdnf_higher_new_rna' ~ "BDNF higher new RNA",
+    new_rna_sig == 'bdnf_lower_new_rna' ~ "BDNF lower new RNA"
+  ))
+
+
+one_vs_6_dds_control$results_table %>% 
+    full_join(one_vs_2_dds_bdnf$results_table, by = c("Geneid"),
+              suffix = c("_4su_effect","_BDNF_2hr")) %>% 
+  left_join(new_rna_sig_bit, by = c('Geneid')) %>% 
+  filter(!is.na(new_rna_sig)) %>% 
+    ggplot(aes(x = log2FoldChange_BDNF_2hr,
+               y = log2FoldChange_4su_effect, color = new_rna_sig)) + 
+    geom_hline(yintercept = 0) +
+    geom_vline(xintercept = 0) +
+    geom_point(alpha = 0.4) + 
+  facet_wrap(vars(new_rna_sig))+
+  labs(color = 'New RNA')+
+  ggpubr::theme_pubr() +
+    ggtitle("Effect on Total RNA with 4SU Treatment (control 6 v 1 hr) vs BDNF 2hr",subtitle = 'All genes') + 
+    ylab("Log2Fold Total RNA - 4SU Treatment") +
+    xlab("Log2Fold Total RNA - BDNF 2hr")
+```
+
+going to add column:4su log2fold change/bdnf+4su log2foldchange to see if bdnf addition amplifies some of the seen 4su response
+```{r bdnf+4su log2foldchange - 4su log2fold change}
+
+one_vs_2_dds_bdnf_results <- one_vs_2_dds_bdnf$results_table %>% 
+  full_join(one_vs_6_dds_control$results_table, by = c("Geneid"),
+              suffix = c("_BDNF_2hr","_4su_effect_control"))
+
+one_vs_2_dds_bdnf_results <- one_vs_2_dds_bdnf_results %>% 
+  mutate(log2fold_ratio = log2FoldChange_4su_effect_control/log2FoldChange_BDNF_2hr) %>% 
+  filter(!gene_name_BDNF_2hr == 'AC126474.1') %>% 
+  filter(!(log2FoldChange_BDNF_2hr < 0 & log2FoldChange_4su_effect_control > 0)) %>% 
+  filter(!(log2FoldChange_BDNF_2hr > 0 & log2FoldChange_4su_effect_control < 0)) %>% 
+  mutate(log2fold_ratio = ifelse(log2FoldChange_BDNF_2hr<0, log2fold_ratio*-1, log2fold_ratio))
+
+ggplot(one_vs_2_dds_bdnf_results, aes(log2fold_ratio))+
+         geom_density()+
+  xlim(-25,25)+
+  ggpubr::theme_pubr()+
+  ggtitle("Relative gene expression effect of 4su vs BDNF in total RNA")+
+  xlab("log2FoldChange_4su / log2FoldChange_BDNF")
+
+background_genes_overlap <- unique(c(one_vs_6_dds_control$results_table$Geneid,one_vs_2_dds_bdnf$results_table$Geneid)) %>% 
+    gsub("\\..*", "", .) %>% 
+  clipr::write_clip()
+
+one_vs_2_dds_bdnf_results %>% 
+  arrange(-log2fold_difference) %>% 
+  slice_max(order_by = log2fold_difference, n = 2000) %>% 
+  pull(Geneid) %>% 
+  gsub("\\..*", "", .) %>% 
+  clipr::write_clip()
+
+BP_GO_2hr_bdnf_minus_4su_fp <- file.path("data", "2bdnf-4su_GO_BP.tsv")
+BP_GO_2hr_bdnf_minus_4su <- janitor::clean_names(read_tsv(BP_GO_2hr_bdnf_minus_4su_fp))
+
+BP_GO_2hr_bdnf_minus_4su %>% slice_max(strength, n = 10) %>% 
+  mutate(term_description = fct_reorder(term_description,strength)) %>% 
+  ggplot(aes(y = strength, fill = false_discovery_rate, x = term_description,size = observed_gene_count))+
+  geom_point(pch = 21) +
+  scale_fill_gradient(low = 'blue', high = 'red')+
+  coord_flip()+ 
+  theme_pubr()+
+  theme(legend.position = 'right')+
+  ggtitle("The effect of BDNF accounting for 4su changes", subtitle = "BP GO terms for BDNF +4su at 2hr minus 4su at 6hr")
+
+CC_GO_2hr_bdnf_minus_4su_fp <- file.path("data", "2bdnf-4su_GO_CC.tsv")
+CC_GO_2hr_bdnf_minus_4su <- janitor::clean_names(read_tsv(CC_GO_2hr_bdnf_minus_4su_fp))
+
+CC_GO_2hr_bdnf_minus_4su %>% slice_max(strength, n = 10) %>% mutate(term_description = fct_reorder(term_description,strength)) %>%  ggplot(aes(y = strength, fill = false_discovery_rate, x = term_description,size = observed_gene_count)) + geom_point(pch = 21) + scale_fill_gradient(low = 'blue', high = 'red')+coord_flip()+ theme_pubr()+theme(legend.position = 'right')+
+  ggtitle("The effect of BDNF accounting for 4su changes", subtitle = "BP GO terms for BDNF +4su at 2hr minus 4su at 6hr")
+
+mf_go_1vs6_upreg_fp <- file.path("data", "mf go 1vs6 control upreg.tsv")
+mf_go_1vs6_upreg <- janitor::clean_names(read_tsv(mf_go_1vs6_upreg_fp))
+
+mf_go_1vs6_upreg %>% slice_max(strength, n = 10) %>% mutate(term_description = fct_reorder(term_description,strength)) %>%  ggplot(aes(y = strength, fill = false_discovery_rate, x = term_description,size = observed_gene_count)) + geom_point(pch = 21) +scale_fill_gradient(low = 'blue', high = 'red')+ coord_flip()+ theme_pubr()+ theme(legend.position = 'right')+ggtitle("Molecular function GO on 1vs6_upreg genes")
+
+```

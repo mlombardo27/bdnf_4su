@@ -1,4 +1,5 @@
 #looking at this paper about optic nerve regeneration in mice
+#because bdnf is involved in axonal outgrowth
 #seeing if any of our genes are also within this group
 
 library(tidyverse)

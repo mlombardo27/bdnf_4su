@@ -1,3 +1,13 @@
+#additional plots for MRes thesis:
+#-fraction of new rna over time graphs for:
+  #GO categories (RNA splicing genes),
+  #genes not being changed for pcrs with bdnf,
+  #bdnf early response genes,
+  #p75 receptor gene (NGFR)
+#-total rna log2fold change over time graphs for same groups
+#-ave number of total reads over time
+#-venn diagram of overlap between 4su and bdnf genes
+
 library(tidyverse)
 
 go_genes_2hr_not_sig_total_higher_new_fp <- file.path('data','go_genes_two_hour_not_sig_total_bdnf_higher_new.csv')
@@ -20,7 +30,7 @@ go_genes_i_want <- smaller_new_ratio_bayesian_p_de %>%
   slice_min(mean_diff, n = 16) %>% 
   pull(gene_name)
 
-go_genes_2hr_downreg_total_higher_new_fp <- file.path('downregulated_twohours_plot_these_genes.csv')
+go_genes_2hr_downreg_total_higher_new_fp <- file.path('gene_lists_for_analysis','downregulated_twohours_plot_these_genes.csv')
 go_genes_2hr_downreg_total_higher_new <- read_csv(go_genes_2hr_downreg_total_higher_new_fp)
 
 go_genes_2hr_downreg_total_higher_new <- go_genes_2hr_downreg_total_higher_new %>% 
@@ -34,6 +44,8 @@ go_genes_i_want2 <- smaller_new_ratio_bayesian_p_de %>%
   pull(gene_name)
 
 chx_test_genes <- c('DCTN2','DYNC1I2')
+
+p75 <- c('NGFR')
 
 estimate_list_full_fp <- file.path('data','estimate_list_full.csv')
 estimate_list_full <- read_csv(estimate_list_full_fp)
@@ -65,7 +77,7 @@ test2 <-estimate_list_full %>%
   mutate(max_y = max_y - 0.005)
 
 test3 <-estimate_list_full %>% 
-  filter(symbol %in% arc) %>%  
+  filter(symbol %in% p75) %>%  
   left_join(smaller_new_ratio_bayesian_p_de, by = c('symbol' = 'gene_name', 'time')) %>% 
   unique() %>% 
   mutate(condition = fct_relevel(condition,'control')) %>% 
@@ -76,7 +88,7 @@ test3 <-estimate_list_full %>%
   ungroup()  %>% 
   mutate(max_y = max_y - 0.005)
 
-test3%>% 
+test%>% 
   ggplot(aes(x = as.factor(time), y = map, fill = condition))+
   geom_boxplot() +
   geom_point(size = 1.5,pch = 21,position = position_dodge(width = 0.9)) +
@@ -96,16 +108,16 @@ test3%>%
   geom_text(
     inherit.aes = FALSE, (aes(x = as.character(time), y = max_y,label = sig_label)),
     size = 7)+
-  ggtitle('arc new fraction of rna')
+  ggtitle('P75 new fraction of rna')
 
 new_ratio_bayesian_p_de %>% 
-  filter(gene_name %in% arc) %>% 
+  filter(gene_name %in% p75) %>% 
   mutate(sig_change = !(padj > 0.1 | is.na(padj))) %>% 
   ggplot(aes(x = time, y= log2FoldChange, fill = sig_change)) +
   geom_hline(yintercept = 0,size = 1)+
   geom_path(aes(x = time, y = log2FoldChange, group = gene_name))+
   geom_point(size = 3,pch = 21)+
-  ggtitle('Change in the Total RNA abundance \nBDNF vs Control 2hr \nfor ARC') +
+  ggtitle('Change in the Total RNA abundance \nBDNF vs Control 2hr \nfor P75 receptor') +
   scale_fill_manual(values = c("plum3","turquoise2")) +
   facet_wrap(~gene_name, scales = "free_y")+
   scale_x_continuous(labels = 0:6, breaks = 0:6)+
@@ -282,3 +294,11 @@ new_ratio_bayesian_p_de %>%
   labs(x = "Treatment Time")+
   ggpubr::theme_pubr()+
   theme(legend.position = 'none')
+
+#looking at the p75 receptor gene, NGFR,compared to NTRK2
+
+new_ratio_bayesian_p_de %>% 
+  filter(gene_name == 'NTRK2' | gene_name == 'NGFR') %>% 
+  ggplot(aes(x = gene_name, y = baseMean))+
+  geom_boxplot()+
+  facet_wrap(~time)

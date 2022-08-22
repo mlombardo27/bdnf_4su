@@ -1,0 +1,113 @@
+---
+title: "YTH bound mRNAs w BDNF"
+author: "Maddie Lombardo"
+date: "2/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(PCAtools)
+library(gprofiler2)
+library(pcaExplorer)
+library(clusterProfiler)
+library(RColorBrewer)
+library(ggpubr)
+library(GOfuncR)
+```
+
+
+```{r read in files}
+YTH_bound_mrna_file_path <- file.path(here::here("data","YTH bound mRNAs.csv"))
+
+yth_bound_mrna <- read_csv(YTH_bound_mrna_file_path) %>% 
+  janitor::clean_names()
+
+new_rna_p_de_fp <- file.path(here::here("data","new_ratio_bayesian_p_de.csv"))
+
+new_rna_p <- read_csv(new_rna_p_de_fp)
+```
+
+want to look at the genes downregulated with high fraction new mrna at 2hr to see if YTH is associated with the decay
+
+lets see how many genes are bound to ythdf
+Compare the N binding sites from POSTAR3 of these proteins to the log2Foldchange and mean_diff - probably a scatter plot
+```{r genes bound to ythdf}
+to_left_join <- yth_bound_mrna %>% 
+  select(target_gene_id, binding_site_records, rbp, target_gene_symbol)
+
+new_rna_p <- new_rna_p %>% 
+  mutate(gene = gsub("\\..*", "", gene)) %>%
+  left_join(to_left_join, by = c("gene" = "target_gene_id")) %>% 
+  unique() %>% 
+  mutate(binding_site_records = ifelse(is.na(binding_site_records),0,binding_site_records))
+  
+new_rna_p %>% ggplot(mapping = aes(log2FoldChange, binding_site_records))+
+  geom_point()+
+  facet_wrap(vars(time))
+
+new_rna_p %>% 
+  filter(binding_site_records > 5) %>% 
+  ggplot(mapping = aes(mean_diff, binding_site_records))+
+  geom_point()+
+  facet_wrap(vars(time))+
+  scale_y_continuous(trans = "log10")
+
+new_rna_p %>%
+  ggplot(mapping = aes(binding_site_records))+
+                       geom_histogram()+
+  scale_x_continuous(trans = "log10")
+```
+
+
+```{r filtering out the downregulated/high fraction new mrna at 2hr}
+new_rna_p %>% 
+  filter(time == 2) %>% 
+  mutate(new_rna_sig = fct_relevel(new_rna_sig, "bdnf_lower_new_rna")) %>% 
+  ggplot(mapping = aes(x = total_rna_sig, y = binding_site_records, fill = new_rna_sig))+
+  geom_boxplot()+
+  scale_y_continuous(trans = "log10")+
+  ggpubr::stat_compare_means()
+
+```
+
+which genes have the most yth bound sites
+overlap high_new_fraction and else with axonal vs soma 
+```{r most yth}
+yth_bound_mrna <- yth_bound_mrna %>% arrange(-binding_site_records)
+
+axonal_genes_fp <- file.path(here::here("data","axonal_genes.txt"))
+
+axonal_genes <- read_lines(axonal_genes_fp)
+  
+new_rna_p <- new_rna_p %>% 
+  mutate(new_rna_lump = ifelse(new_rna_sig == "bdnf_higher_new_rna", "bdnf_higher_new_rna", "other")) %>%
+  mutate(axonal_genes = target_gene_symbol %in% axonal_genes)
+
+new_rna_p %>% 
+  filter(time == 2) %>% 
+  mutate(new_rna_sig = fct_relevel(new_rna_sig, "bdnf_lower_new_rna")) %>% 
+  ggplot(mapping = aes(x = new_rna_lump, y = binding_site_records, fill = new_rna_lump))+
+  geom_boxplot()+
+  scale_y_continuous(trans = "log10")+
+  ggpubr::stat_compare_means()+
+  facet_wrap(vars(total_rna_sig))
+
+new_rna_p %>% 
+  ggplot(mapping = aes(x = mean_diff, color = axonal_genes))+
+  stat_ecdf()+
+  facet_wrap(vars(time))
+
+new_rna_p %>% 
+  ggplot(mapping = aes(x = log2FoldChange, color = axonal_genes))+
+  stat_ecdf()+
+  facet_wrap(vars(time))
+
+new_rna_p %>% 
+  ggplot(mapping = aes(x = mean_diff, color = axonal_genes))+
+  stat_ecdf()+
+  facet_grid(time ~ total_rna_sig)
+
+```
+

@@ -7,11 +7,13 @@ library(corrplot)
 new_ratio_bayesian_fp <- file.path('data','new_ratio_bayesian_p_de.csv')
 new_ratio <- read_csv(new_ratio_bayesian_fp)
 
-isoform_switch <- readRDS('isoform_switch_2hr_data.rds')
+isoform_switch_2hr_rds <- file.path('r_objects_saved','isoform_switch_2hr_data.rds')
+isoform_switch <- readRDS(isoform_switch_2hr_rds)
 
 isoform_switch_consequence <- isoform_switch$switchConsequence
 
-coding_to_noncoding_genes <- read_csv('coding_to_noncoding_genes_2hr.csv')
+coding_to_noncoding_fp <- file.path('gene_lists_for_analysis','coding_to_noncoding_genes_2hr.csv')
+coding_to_noncoding_genes <- read_csv(coding_to_noncoding_fp)
 
 #on both new and total rna categories
 my_table <- new_ratio %>% 

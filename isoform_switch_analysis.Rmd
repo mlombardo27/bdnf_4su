@@ -293,6 +293,29 @@ switch_list_consequence_2hr %>%
   clipr::write_clip()
 ```
 
+GRAPH OF coding > noncoding genes new/total rna categorizaiton
+```{r new categorization of coding >noncoding genes}
+coding_to_non_fp<-file.path('coding_to_noncoding_genes_2hr.csv')
+coding_to_noncoding_genes <- read_csv(coding_to_non_fp)
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% coding_to_noncoding_genes$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch from coding to noncoding at 2 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))+
+  ggpubr::theme_pubr()
+```
+
 ```{r getting genes that intron retention gain 2hr}
 switch_list_consequence_2hr <-isoform_switch_2hr$switchConsequence
 
@@ -303,7 +326,41 @@ switch_list_consequence_2hr %>%
   clipr::write_clip()
 ```
 
-```{r orf loss }
+graph of INTRON RETENTION GAIN new/total rna cateorization
+
+```{r categorization of intron retention gain genes}
+intron_retention_fp <- file.path('data', 'intron_retained_genes.csv')
+intron_retained_genes <- read_csv(intron_retention_fp)
+
+full_de_min2 <- readRDS('full_de_min2.rds')
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% intron_retained_genes$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\nfor genes that switch to intron retention gain at 2 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))+
+  ggpubr::theme_pubr()
+
+full_de_min2 %>% 
+  filter(gene_name %in% intron_retained_genes$x) %>% 
+  filter(total_rna_sig == 'upregulated') %>% 
+  pull(gene_name) %>% 
+  unique() %>% 
+  clipr::write_clip()
+
+```
+
+```{r more upstream/downstream last exon, 2hr}
 switch_list_2hr_part2 <- readRDS('isoform_switch_2hr_data.rds')
 switch_list_consequence_2hr <-switch_list_2hr_part2$switchConsequence
 
@@ -325,6 +382,60 @@ switch_list_2hr_consequence %>%
 switchPlot(switch_list_2hr_part2, gene = 'MAP3K13')
 switchPlot(switch_list_2hr_part2, gene = 'METTL15')
 switchPlot(switch_list_2hr_part2, gene = 'PIK3R4')
+```
+
+more upstream/downstream last exon categorization, 6hr
+*when i first did this i misunderstood what more upstream/downstream meant and though it had to do with length which is why the csv is named incorrectly
+```{r more upstream/downstream last exon, 6hr}
+shorter_longer_last_exon_6hr <- readxl::read_excel('6hr_shorter_longer_last_exon_genes.xlsx')
+
+palette<- c("#A6CEE3", "#1F78B4","#B2DF8A", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% shorter_longer_last_exon_6hr$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to more upstream or more downstream last exon at 6 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
+
+GRAPH OF orf > non-orf switch new/total rna categorization
+
+```{r new categorization of orf > non orf genes}
+orf_loss_fp <- file.path('data','orf_loss_2hr.csv')
+orf_loss_genes <- read_csv(orf_loss_fp)
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% orf_loss_genes$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\nfor genes that switch to Complete ORF loss at 2 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))+
+  ggpubr::theme_pubr()
+
+
+full_de_min2 %>% 
+  filter(gene_name %in% orf_loss_genes$x) %>% 
+  filter(total_rna_sig == 'not_significant' & new_rna_sig == 'bdnf_higher_new_rna') %>% 
+  slice_min(mean_diff,n = 10) %>% 
+  pull(gene_name) %>% 
+  clipr::write_clip()
 ```
 
 example of intron retention 2hr
@@ -357,7 +468,7 @@ switchPlot(switch_list_2hr_part2, gene = 'PRKN')
 
 loop for shorter 3'utr
 
-```{r}
+```{r loop for shorter 3'utr}
 longer_3utr_genes <- readxl::read_xlsx('longer_3utr_genes.xlsx')
 
 pdf('longer_3utr_isoform_switch_2hr.pdf') 
@@ -409,11 +520,11 @@ switchPlotTopSwitches(switchAnalyzeRlist = switch_list_2hr_part2,
             splitFunctionalConsequences = TRUE,
             pathToOutput = "C:/Users/mlomb/Desktop/tracked_files_github/bdnf_4su/splicing plots", 
             fileType = "pdf")
-extractConsequenceSummary(switchAnalyzeRlist = switch_list_2hr_part2,
-                          consequencesToAnalyze = c("tss","tts","last_exon","isoform_length","intron_retention","coding_potential","ORF_genomic","5_utr_length","3_utr_length","NMD_status","domains_identified","genomic_domain_position","domain_length","signal_peptide_identified","IDR_identified","IDR_length","IDR_type"),
+extractConsequenceSummary(switchAnalyzeRlist = isoform_switch_2hr,
+                          consequencesToAnalyze = c("tss","tts","last_exon","isoform_length","intron_retention","coding_potential","ORF_genomic","5_utr_length","3_utr_length","NMD_status","domains_identified","genomic_domain_position","IDR_identified", 'ORF_length'),
                           removeEmptyConsequence= TRUE,
                 plot = TRUE, returnResult = FALSE)
-extractConsequenceEnrichment(switchAnalyzeRlist = switch_list_2hr_part2, consequencesToAnalyze = c("tss","tts","last_exon","isoform_length","intron_retention","coding_potential","ORF_genomic","5_utr_length","3_utr_length","NMD_status","domains_identified","genomic_domain_position","domain_length","signal_peptide_identified","IDR_identified","IDR_length","IDR_type"),
+extractConsequenceEnrichment(switchAnalyzeRlist = isoform_switch_2hr, consequencesToAnalyze = c("tss","tts","last_exon","isoform_length","intron_retention","coding_potential","ORF_genomic","5_utr_length","3_utr_length","NMD_status","domains_identified","genomic_domain_position","domain_length","signal_peptide_identified","IDR_identified","IDR_length","IDR_type",'ORF_length'),
                 plot = TRUE, returnResult = FALSE)
 extractSplicingEnrichment(switchAnalyzeRlist = switch_list_2hr_part2, 
                 plot = TRUE, returnResult = TRUE)
@@ -678,3 +789,46 @@ only_upstream_last_exon <- switch_consequence %>%
   clipr::write_clip()
 ```
 
+```{r just longer last exon, 6hr}
+longer_last_exon_6hr <- readxl::read_excel('longer_last_exon_genes_6hr.xlsx')
+
+palette<- c("#A6CEE3", "#1F78B4", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% longer_last_exon_6hr$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\n for genes that switch to longer last exon at 6 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))
+```
+
+
+upstream last exon genes for 1 and 2hrs now 
+
+```{r upstream last exon 2hr}
+upstream_last_exon <- readxl::read_xlsx('upstream_last_exon_genes_2hr.xlsx')
+
+palette<- c("#A6CEE3", "#1F78B4","#B2DF8A", "#33A02C")
+
+full_de_min2 %>% 
+  filter(gene_name %in% upstream_last_exon$x) %>% 
+  group_by(new_rna_sig, total_rna_sig) %>% 
+  summarize(count = n()) %>% 
+  ggplot(aes(x = total_rna_sig, y = count, fill = new_rna_sig))+
+    scale_fill_manual(values = palette)+
+    geom_col() +
+    coord_flip()+
+    ggtitle("Categorizing New vs total RNA -\nfor genes that switch to more upstream last exon at 2 hours") +
+    labs(y = "Number of Genes", 
+         x = "Total RNA Categorization",
+         fill = "New RNA Categorization")+
+  theme(axis.text.y = element_text(angle = 45), legend.position = "bottom", plot.title = element_text(hjust = 0.5), legend.text = element_text(size = 8), legend.title = element_text(size =10))+
+  ggpubr::theme_pubr()
+```

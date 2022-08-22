@@ -3,8 +3,8 @@ splicing_dots_tables_function <- function(input_splicing, list_gene = "",psi_cut
 
     if(psi_cutoff != 0 ){
       psi_genes <- input_splicing %>% 
-        filter(mean_dpsi_per_lsv_junction >= psi_cutoff) %>% 
-        filter(probability_changing >= 0.9)
+        filter(mean_dpsi_per_lsv_junction >= psi_cutoff)  
+       # filter(probability_changing >= 0.9)
     }
   
     if(probability_changing_cutoff != 0){
@@ -19,7 +19,7 @@ splicing_dots_tables_function <- function(input_splicing, list_gene = "",psi_cut
     }
     splicing_dots_tables <- input_splicing %>% 
       mutate(junction_name = case_when(gene_name %in% list_gene &
-                                         probability_changing > 0.9  &
+                                         #probability_changing > 0.9  &
                                          mean_dpsi_per_lsv_junction > 0 ~ gene_name,
                                        T ~ "")) %>%
       mutate(`Novel Junction` = de_novo_junctions == 1) %>%
@@ -27,7 +27,7 @@ splicing_dots_tables_function <- function(input_splicing, list_gene = "",psi_cut
       mutate(log10_test_stat = ifelse(is.infinite(log10_test_stat), 4.5, log10_test_stat)) %>%
       mutate(graph_alpha = ifelse(probability_changing > 0.9, 1, 0.2)) %>%
       mutate(label_junction = case_when(gene_name %in% list_gene &
-                                          probability_changing > 0.9  &
+                                          #probability_changing > 0.9  &
                                           mean_dpsi_per_lsv_junction > 0 ~ junction_name,
                                         T ~ ""))
 

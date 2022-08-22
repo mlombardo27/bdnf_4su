@@ -1,0 +1,98 @@
+---
+title: "M6a"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(annotables)
+
+```
+
+read in the data files
+
+```{r}
+validation_genes_file <- file.path(here::here(),"data","validation_genes.txt")
+m6a_sites_file <- file.path(here::here(), "data", "m6a_sites_hg37.csv")
+
+validation_genes <- readLines(validation_genes_file)
+m6a_sites <- read_csv(m6a_sites_file)
+```
+
+what fraction of the transcriptome contains an m6a site: answer? ~30%
+```{r}
+num_m6a_uniq <- m6a_sites$symbol %>% 
+  unique() %>% 
+  length()
+
+percent_m6a <- (num_m6a_uniq/length(unique(annotables::grch38$ensgene)))*100
+```
+
+how many m6a sites per validation genes
+
+```{r}
+m6a_sites <- m6a_sites %>% 
+  add_count(symbol)
+
+validation_genes_df <- as.data.frame(validation_genes) %>% 
+  left_join(m6a_sites, by = c("validation_genes" = "symbol")) %>% 
+  mutate(n = ifelse(is.na(n), 0, n))
+
+the_thing <- validation_genes_df %>% 
+  select(validation_genes, n) %>% 
+  unique()
+
+christmas = c("#a81817", "#344d2f")
+
+the_thing %>% 
+   mutate(validation_genes = fct_reorder(validation_genes, -n)) %>% 
+   ggplot(aes(x = validation_genes, y = n,fill = validation_genes))+
+   geom_col() + 
+  scale_fill_manual(values = rep(christmas,5)) + 
+  theme(legend.position = 'none')
+```
+
+which axonal genes have the most m6a sites?
+
+```{r}
+#first read in the axonal genes file
+axonal_genes_filepath <- file.path(here::here("data", "axonal_genes.txt"))
+axonal_genes <- readLines(axonal_genes_filepath)
+
+axonal_genes_df <- as.data.frame(axonal_genes) %>% 
+  left_join(m6a_sites, by = c("axonal_genes" = "symbol")) %>% 
+  mutate(n = ifelse(is.na(n), 0, n))
+
+m6a_axonal_genes <- axonal_genes_df %>% 
+  select(axonal_genes, n) %>% 
+  unique() %>% 
+  slice_max(n, n = 25)
+
+axonal_thing <- m6a_axonal_genes %>% 
+  mutate(axonal_genes = fct_reorder(axonal_genes, n)) %>% 
+   ggplot(aes(x = axonal_genes, y = n,fill = axonal_genes))+
+   geom_col() + 
+  scale_fill_manual(values = rep(christmas, 15)) + 
+  theme(legend.position = 'none')+
+  coord_flip()
+```
+
+percent m6a in axonal genes : 77%
+
+```{r}
+num_axonal_genes_m6a <- axonal_genes_df %>% 
+  filter(n >0) %>% 
+  pull(axonal_genes) %>% 
+  unique() %>% 
+  length()
+
+percent_m6a_axonal <- (num_axonal_genes_m6a/length(axonal_genes)*100)
+```
+
+percent of total transcriptome that is axonal
+
+```{r}
+percent_axonal_of_total <- length(axonal_genes)/(length(unique(annotables::grch38$ensgene)))*100
+```
+
