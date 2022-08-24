@@ -27,7 +27,7 @@ This is where we determined the poor RNA quality for plate 4 that we removed fro
 #### Functions included:
 
 `create_feature_count_table` -inputs file.path to folder of featureCounts .txt files; outputs a `counts_object` that widens the featureCounts data and puts it in format for pca analysis
-* make sure that all the files end in this pattern: `_featureCounts_results.txt`
+* make sure that all the files end in this pattern: `_featureCounts_results.txt` or adjust the grep pattern in the function
 
 `make_volcano_plot` -inputs `results` pca table and `gene_names` of genes of interest you want labelled and outputs a volcano plot showing the log2foldchange and padj of total rna
 
