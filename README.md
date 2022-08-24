@@ -117,7 +117,7 @@ Here we analyzed the salmon alignment data to see which genes were having change
 We saw that the majority of changes caused by BDNF treatment led to )"unproductive" transcripts, or those with ORF loss, intron retention, coding>noncoding. 
 
 #### Vignette used:
-IsoformSwitchAnalyzer[https://bioconductor.org/packages/devel/bioc/vignettes/IsoformSwitchAnalyzeR/inst/doc/IsoformSwitchAnalyzeR.html]
+[IsoformSwitchAnalyzer](https://bioconductor.org/packages/devel/bioc/vignettes/IsoformSwitchAnalyzeR/inst/doc/IsoformSwitchAnalyzeR.html)
 
 * the isoformSwitchAnalysisPart2() was nonfunctional on my computer, so I rewrote the code to do step by step
 
