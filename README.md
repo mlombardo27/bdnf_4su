@@ -29,7 +29,7 @@ This is where we determined the poor RNA quality for plate 4 that we removed fro
 `create_feature_count_table` 
 
 - inputs:
-    * file.path to folder of featureCounts .txt files
+   * file.path to folder of featureCounts .txt files
 - outputs a `counts_object` that widens the featureCounts data and puts it in format for pca analysis
 
 * make sure that all the files end in this pattern: `_featureCounts_results.txt`
@@ -37,8 +37,8 @@ This is where we determined the poor RNA quality for plate 4 that we removed fro
 `make_volcano_plot` 
 
 - inputs:
-    * `results` pca table
-    * `gene_names` of genes of interest you want labelled 
+   * `results` pca table
+   * `gene_names` of genes of interest you want labelled 
 
 - outputs a volcano plot showing the log2foldchange and padj of total rna
 
@@ -51,21 +51,21 @@ Here, we run the differential expression analysis and GO analysis on the total R
 `run_standard_deseq` 
 
 - inputs:
-    * `folder_of_featurecounts` 
-    * `base_grep` 
-    * `contrast_grep` 
-    * `grep_pattern` 
-    * `baseName`
-    * `contrastName` 
+   * `folder_of_featurecounts` 
+   * `base_grep` 
+   * `contrast_grep` 
+   * `grep_pattern` 
+   * `baseName`
+   * `contrastName` 
 
 - outputs a deseq object with `results_table` and `deseq_obj`
 
 `label_significant` 
 
 - inputs:
-    * deseq `results_table`
-    * `log2FoldCut`
-    * `log10padj` 
+   * deseq `results_table`
+   * `log2FoldCut`
+   * `log10padj` 
     
 - outputs a volcano plot with the significant genes (determined by `log2FoldCut` and `log10padj`) labelled
 
@@ -105,16 +105,16 @@ Here we determined that we couldn't use the converted reads to analyze due to lo
 `min2_deseq` 
 
 - inputs:
-* `filtered_grandslam_data`
-* `time` 
+   * `filtered_grandslam_data`
+   * `time` 
 
 - outputs a deseq object with `results_table` and `deseq_obj`
 
 `create_table_1` 
 
 - inputs:
-* `filtered_grandslam_data` 
-* `time` 
+   * `filtered_grandslam_data` 
+   * `time` 
 
 - outputs a formatted counts table
 
@@ -213,13 +213,13 @@ external analyses:
 
 * this package requires use of webservers to do external analyses that it includes in its output
 
-`CPC2` -identifies coding potential
+   * `CPC2` -identifies coding potential
 
-`PFAM` -identifies protein families
+   * `PFAM` -identifies protein families
 
-`signalIP` -identifies signal peptides
+   * `signalIP` -identifies signal peptides
 
-`IUPred` -identifies disordered protein regions
+   * `IUPred` -identifies disordered protein regions
 
 #### Important functions of the Vignette:
 
