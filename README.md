@@ -1,4 +1,4 @@
-# bdnf_4su
+#bdnf-4su
 
 This project analyzes the output of SLAM-sequencing, which labels newly transcribed RNA as well as total RNA. This analysis uses various RNA alignment data outputs. 
 
@@ -26,10 +26,21 @@ This is where we determined the poor RNA quality for plate 4 that we removed fro
 
 #### Functions included:
 
-`create_feature_count_table` -inputs file.path to folder of featureCounts .txt files; outputs a `counts_object` that widens the featureCounts data and puts it in format for pca analysis
-* make sure that all the files end in this pattern: `_featureCounts_results.txt` or adjust the grep pattern in the function
+`create_feature_count_table` 
 
-`make_volcano_plot` -inputs `results` pca table and `gene_names` of genes of interest you want labelled and outputs a volcano plot showing the log2foldchange and padj of total rna
+- inputs:
+    * file.path to folder of featureCounts .txt files
+- outputs a `counts_object` that widens the featureCounts data and puts it in format for pca analysis
+
+* make sure that all the files end in this pattern: `_featureCounts_results.txt`
+
+`make_volcano_plot` 
+
+- inputs:
+    * `results` pca table
+    * `gene_names` of genes of interest you want labelled 
+
+- outputs a volcano plot showing the log2foldchange and padj of total rna
 
 ### `standard_deseq2_total_rna_and_GO`
 
@@ -37,13 +48,45 @@ Here, we run the differential expression analysis and GO analysis on the total R
 
 #### Functions included:
 
-`run_standard_deseq` -inputs `folder_of_featurecounts` `base_grep` `contrast_grep` `grep_pattern` `baseName` `contrastName` and outputs a deseq object with `results_table` and `deseq_obj`
+`run_standard_deseq` 
 
-`label_significant` -inputs deseq `results_table` `log2FoldCut` `log10padj` and outputs a volcano plot with the significant genes (determined by `log2FoldCut` and `log10padj`) labelled
+- inputs:
+    * `folder_of_featurecounts` 
+    * `base_grep` 
+    * `contrast_grep` 
+    * `grep_pattern` 
+    * `baseName`
+    * `contrastName` 
 
-`filter_significant`-inputs deseq `results_table` `padj_cutoff` `log2Fold_cutoff` `direction` and outputs a list of ENSG ids that fit your significance inputs
+- outputs a deseq object with `results_table` and `deseq_obj`
 
-`cp_GO_analysis` -inputs `significant_genes` `bg_ids` `typeGO` and outputs a GO object
+`label_significant` 
+
+- inputs:
+    * deseq `results_table`
+    * `log2FoldCut`
+    * `log10padj` 
+    
+- outputs a volcano plot with the significant genes (determined by `log2FoldCut` and `log10padj`) labelled
+
+`filter_significant`
+
+- inputs:
+    * deseq `results_table`
+    * `padj_cutoff`
+    * `log2Fold_cutoff`
+    * `direction` 
+
+-outputs a list of ENSG ids that fit your significance inputs
+
+`cp_GO_analysis` 
+
+- inputs:
+    * `significant_genes`
+    * `bg_ids`
+    * `typeGO` 
+    
+- outputs a GO object
 
 ### `deseq_on_grandslam_data`
 
@@ -59,21 +102,48 @@ Here we determined that we couldn't use the converted reads to analyze due to lo
 
 #### Functions included: 
 
-`min2_deseq` -inputs `filtered_grandslam_data` and `time` and outputs a deseq object with `results_table` and `deseq_obj`
+`min2_deseq` 
 
-`create_table_1` -inputs `filtered_grandslam_data` and `time` and outputs a formatted counts table
+- inputs:
+* `filtered_grandslam_data`
+* `time` 
 
-`create_meta_table` -inputs formatted counts table (from create_table_1) and outputs the `metadata` table
+- outputs a deseq object with `results_table` and `deseq_obj`
 
-`label_significant` -inputs deseq `results_table` `log2FoldCut` `log10padj` and outputs a volcano plot with the significant genes (determined by `log2FoldCut` and `log10padj`) labelled
+`create_table_1` 
+
+- inputs:
+* `filtered_grandslam_data` 
+* `time` 
+
+- outputs a formatted counts table
+
+`create_meta_table` 
+
+- inputs: formatted counts table (from create_table_1) and outputs the `metadata` table
+
+`label_significant` 
+
+- inputs:
+    * deseq `results_table`
+    * `log2FoldCut`
+    * `log10padj` 
+
+- outputs a volcano plot with the significant genes (determined by `log2FoldCut` and `log10padj`) labelled
 
 #### Major outputs:
 
-log2foldchange of new and total rna
+* log2foldchange of new and total rna
 
-new and total rna categorization
+* new and total rna categorization
 
-biplot of all timepoints together for converted reads (new rna)
+* biplot of all timepoints together for converted reads (new rna)
+
+### `m6a_fraction_total_transcriptome_and_axonal_genes`
+
+This is where we pulled known m6a sites and determined where these sites mostly exist.
+
+We found that 30% of the total transcriptome has an m6a site. Around 77% of axonal genes have an m6a site. Axonal genes only make up 5% of the total transcriptome. 
 
 ### `4su_effect_1vs6_1vs2`
 
@@ -89,26 +159,40 @@ We saw that most of the genes being differentially expressed with 4sU were diffe
 
 #### Functions included:
 
-`run_standard_deseq` -inputs `folder_of_featurecounts` `base_grep` `contrast_grep` `grep_pattern` `baseName` `contrastName` and outputs a deseq object with `results_table` and `deseq_obj`
+`run_standard_deseq` 
+- inputs:
+    * `folder_of_featurecounts` 
+    * `base_grep`
+    * `contrast_grep`
+    * `grep_pattern`
+    * `baseName`
+    * `contrastName` 
+    
+- outputs a deseq object with `results_table` and `deseq_obj`
 
-* for `1vs6_dds`, 
-`base_grep` = 1 hr
-`contrast_grep` = 6hr
-`grep_pattern` = CONTROL_.*.*_1|CONTROL_.*.*_6
-`baseName` = onehour
-`contrastName` = 6hr 
+    * for `1vs6_dds`: 
+    
+    `base_grep` = 1 hr
+    
+    `contrast_grep` = 6hr
+    
+    `grep_pattern` = CONTROL_.*.*_1|CONTROL_.*.*_6
+    
+    `baseName` = onehour
+    
+    `contrastName` = 6hr 
 
 `label_significant`
 
 #### Major outputs:
 
-volcano plots of 1vs6 hours and 1vs2 hours
+* volcano plots of 1vs6 hours and 1vs2 hours
 
-venn diagrams of the overlap of 4su and bdnf for upregulated and downregulated genes
+* venn diagrams of the overlap of 4su and bdnf for upregulated and downregulated genes
 
-GO of 4su vs bdnf related genes
+* GO of 4su vs bdnf related genes
 
-log2foldchange of the total rna for 4su vs bdnf related genes
+* log2foldchange of the total rna for 4su vs bdnf related genes
 
 ### `isoform_switch_analysis`
 
