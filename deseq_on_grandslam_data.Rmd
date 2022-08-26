@@ -21,6 +21,15 @@ library(GOfuncR)
 source(here::here('grandslam_to_deseq_function.R'))
 ```
 
+```{r read in files and filter}
+grandslam_new_RNA_file_path <- file.path(here::here('data/grandslam_new_rna.csv'))
+
+grandslam_new_rna <- read_csv(grandslam_new_RNA_file_path)
+
+grandslam_new_rna_filtered <- grandslam_new_rna %>% 
+  filter(estimate_new_credible_interval < 0.2)
+```
+
 deseq on grandslam data hr 2
 ```{r p-value converted reads hr 2}
 time2 <- min2_deseq(grandslam_new_rna_filtered, time = 2)
@@ -65,14 +74,14 @@ full_de_min2 <- purrr::map2(de_list, samp_ids, ~cbind(.x, time = .y)) %>%
 
 ```{r read in bayesian shizz}
 bayesian_fp <- file.path("data","new_ratio_bayesian_p_de.csv")
-new_ratio_p <- read_csv(bayesian_fp)
+new_ratio_bayesian_p_de <- read_csv(bayesian_fp)
 ```
 
 we making a log2foldchange graph comparing new to total
 ```{r log2fold new vs total}
 
 full_de_min2 <- full_de_min2 %>% 
-  left_join(new_ratio_p %>% 
+  left_join(new_ratio_bayesian_p_de %>% 
               mutate(ensgene = gsub("\\..*", "", gene)), 
             by = c('ensgene','time'),
             suffix = c("_total_rna","_new_rna")) %>%

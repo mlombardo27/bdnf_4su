@@ -1,5 +1,5 @@
 ---
-title: "M6a"
+title: "M6a for total transcriptome and axonal genes"
 output: html_document
 ---
 
@@ -13,8 +13,8 @@ library(annotables)
 read in the data files
 
 ```{r}
-validation_genes_file <- file.path(here::here(),"data","validation_genes.txt")
-m6a_sites_file <- file.path(here::here(), "data", "m6a_sites_hg37.csv")
+validation_genes_file <- file.path(here::here(),"gene_lists_for_analysis","validation_genes.txt")
+m6a_sites_file <- file.path(here::here(), "gene_lists_for_analysis", "m6a_sites_hg37.csv")
 
 validation_genes <- readLines(validation_genes_file)
 m6a_sites <- read_csv(m6a_sites_file)
@@ -57,7 +57,7 @@ which axonal genes have the most m6a sites?
 
 ```{r}
 #first read in the axonal genes file
-axonal_genes_filepath <- file.path(here::here("data", "axonal_genes.txt"))
+axonal_genes_filepath <- file.path(here::here("gene_lists_for_analysis", "axonal_genes.txt"))
 axonal_genes <- readLines(axonal_genes_filepath)
 
 axonal_genes_df <- as.data.frame(axonal_genes) %>% 

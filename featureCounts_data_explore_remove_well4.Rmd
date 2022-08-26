@@ -14,8 +14,6 @@ library(tidyverse)
 read in functions
 ```{r read in functions}
 source(here::here('make_volcano_plot.R'))
-source(here::here('run_standard_deseq.R'))
-source(here::here('make_deseq_dfs.R'))
 source(here::here('create_feature_count_table.R'))
 ```
 

@@ -26,8 +26,8 @@ library(clusterProfiler)
 ```{r reading the functions in}
 source(here::here('run_standard_deseq.R'))
 source(here::here('make_volcano_plot.R'))
-source(here::here('filter_significant.R'))
-source(here::here('cluster_profiler_GO_analysis.R'))
+source(here::here('filter_significant_genes.R'))
+source(here::here('cp_GO_analysis_function.R'))
 
 ```
 
