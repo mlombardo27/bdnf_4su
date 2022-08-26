@@ -1,4 +1,4 @@
-#bdnf-4su
+# bdnf-4su
 
 This project analyzes the output of SLAM-sequencing, which labels newly transcribed RNA as well as total RNA. This analysis uses various RNA alignment data outputs. 
 
